@@ -1,0 +1,2 @@
+2024-08-09 16:31:46,105 logger       INFO     This is an info message.                                                         log_handler_base.py :[56     - info                ()] 
+2024-08-09 16:31:46,105 logger       ERROR    This is an error message.                                                        log_handler_base.py :[59     - error               ()] 
