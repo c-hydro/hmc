@@ -1,11 +1,8 @@
-import os
 import re
-from typing import Optional
-from datetime import datetime
 import pandas as pd
 
 from hmc.generic_toolkit.namelist.lib_namelist_utils import filter_settings, group_settings, parse_settings
-from hmc.generic_toolkit.namelist.lib_namelist_default import convert_namelist_keys
+from hmc.generic_toolkit.default.lib_default_namelist import convert_namelist_keys
 
 
 class NamelistHandler:
@@ -28,10 +25,10 @@ class NamelistHandler:
         settings_group_raw = group_settings(settings_blocks)
         settings_group_parsed = parse_settings(settings_group_raw)
 
-        settings_group_converted = convert_namelist_keys(settings_group_parsed, namelist_type='default')
+        settings_group_converted = convert_namelist_keys(
+            settings_group_parsed, variable_type='default', group_type='default')
 
         return settings_group_converted
-
 
     def error_data(self):
         """
@@ -44,8 +41,9 @@ class NamelistHandler:
         Write the data for a given time.
         """
         raise NotImplementedError
-    
-    def view_data(self, settings_dict: dict) -> None:
+
+    @staticmethod
+    def view_data(settings_dict: dict) -> None:
         """
         View the data for a given time.
         """
@@ -58,5 +56,3 @@ class NamelistHandler:
         Check if data is available for a given time.
         """
         raise NotImplementedError
-
-

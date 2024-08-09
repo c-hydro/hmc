@@ -59,6 +59,14 @@ class TimeHandler:
 
         return time_range
 
+    @staticmethod
+    def get_previous_time(time_step: pd.Timestamp, time_seconds: int = 0) -> pd.Timestamp:
+        return time_step - pd.Timedelta(seconds=time_seconds)
+
+    @staticmethod
+    def get_next_time(time_step: pd.Timestamp, time_seconds: int = 0) -> pd.Timestamp:
+        return time_step + pd.Timedelta(seconds=time_seconds)
+
     def select_times_by_step(self, time_range: pd.date_range,
                              time_step: int = 0, time_unit='H') -> pd.date_range:
         """

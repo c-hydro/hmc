@@ -1,6 +1,9 @@
-from collections import OrderedDict
+
+import pandas as pd
 from typing import Tuple, List
-import re
+
+from hmc.generic_toolkit.default.lib_default_time import time_format_datasets
+from hmc.generic_toolkit.time.lib_time_utils import is_date
 
 
 # method to filter comments from a file stream
@@ -90,27 +93,33 @@ def parse_settings(settings_groups: dict) -> dict:
 
             if len(v) == 1:
                 v = v[0].strip()
-                if v.startswith("'") and v.endswith("'"):
-                    parsed_settings[group_name][k] = v[1:-1]
-                elif v.startswith('"') and v.endswith('"'):
-                    parsed_settings[group_name][k] = v[1:-1]
-                elif v.startswith("'"):
-                    parsed_settings[group_name][k] = v[1:]
-                elif v.endswith("'"):
-                    parsed_settings[group_name][k] = v[:-1]
-                elif v.lower() == '.true.':
-                    parsed_settings[group_name][k] = True
-                elif v.lower() == '.false.':
-                    parsed_settings[group_name][k] = False
-                else:
-                    try:
-                        parsed_settings[group_name][k] = int(v)
-                    except ValueError:
-                        try:
-                            parsed_settings[group_name][k] = float(v)
-                        except ValueError:
-                            parsed_settings[group_name][k] = v
 
+                date_check = is_date(v, format=time_format_datasets)
+
+                if not date_check:
+
+                    if v.startswith("'") and v.endswith("'"):
+                        parsed_settings[group_name][k] = v[1:-1]
+                    elif v.startswith('"') and v.endswith('"'):
+                        parsed_settings[group_name][k] = v[1:-1]
+                    elif v.startswith("'"):
+                        parsed_settings[group_name][k] = v[1:]
+                    elif v.endswith("'"):
+                        parsed_settings[group_name][k] = v[:-1]
+                    elif v.lower() == '.true.':
+                        parsed_settings[group_name][k] = True
+                    elif v.lower() == '.false.':
+                        parsed_settings[group_name][k] = False
+                    else:
+                        try:
+                            parsed_settings[group_name][k] = int(v)
+                        except ValueError:
+                            try:
+                                parsed_settings[group_name][k] = float(v)
+                            except ValueError:
+                                parsed_settings[group_name][k] = v
+                else:
+                    parsed_settings[group_name][k] = pd.Timestamp(v)
             else:
                 try:
                     v_list = [int(i) for i in v]

@@ -1,9 +1,6 @@
-import json
-import io
+
 import argparse
 import os
-from datetime import datetime
-
 
 # method to get options from command line
 def get_options():
@@ -11,9 +8,9 @@ def get_options():
     get options from the command line
     """
     args = get_args()
-    settings_file, time_start, time_end = check_args(args)
+    settings_file, time_start, time_end, log_level = check_args(args)
 
-    return settings_file, time_start, time_end
+    return settings_file, time_start, time_end, log_level
 
 
 # method to get command line arguments
@@ -32,6 +29,7 @@ def get_args():
     parser.add_argument('-settings_file', help='Settings file with the options', required=True)
     parser.add_argument('-time_start', help='Start date for the time range')
     parser.add_argument('-time_end', help='End date for the time range')
+    parser.add_argument('-log_level', help='Log level', default='INFO')
     args = parser.parse_args()
 
     return args
@@ -53,4 +51,10 @@ def check_args(args):
     if settings_file is None or not os.path.exists(settings_file):
         raise ValueError(f'{settings_file} does not exist')
 
-    return settings_file, time_start, time_end
+    log_level = None
+    if args.log_level:
+        log_level = args.log_level
+    if log_level not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'NOTSET']:
+        raise ValueError(f'Invalid log level: {args.log_level}')
+
+    return settings_file, time_start, time_end, log_level
