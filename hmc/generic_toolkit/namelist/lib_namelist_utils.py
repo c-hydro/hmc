@@ -94,7 +94,7 @@ def parse_settings(settings_groups: dict) -> dict:
             if len(v) == 1:
                 v = v[0].strip()
 
-                date_check = is_date(v, format=time_format_datasets)
+                date_check = is_date(v, date_format=time_format_datasets)
 
                 if not date_check:
 

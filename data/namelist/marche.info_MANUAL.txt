@@ -10,7 +10,7 @@ dCt=0.4
 ! Infiltration capacity at saturation [-]
 dCf=0.04
 ! Domain name
-sDomainName="marche"
+sDomainName="bisagno"
 ! Soil humidity average initialization [-]
 dCPI=0.3
 ! Maximum water capacity of the aquifer [mm]
@@ -25,7 +25,7 @@ dCN = 56.01
 dFrac = 0.7
 ! Watertable sources average initialization [1/t]
 dWS = 3.6780000000000003e-09
-! Watertable deep losses average initialization [1/t]
+! Watertable deep losses average initialization [1/t]https://www.jetbrains.com/help/pycharm/markdown.html
 dWDL = 3.6780000000000003e-09
 ! -----------------------------------------------------------------------------------------------
 
@@ -132,7 +132,7 @@ a1dDtStep = 1, 6, 6, 60
 a1dDtRatioStep = 3, 3, 3, 2
 
 ! Data forcing gridded and point dT [seconds]
-iDtData_Forcing = 3600
+siDtData_Forcing = 3600
 
 ! Data updating gridded dT [seconds] --> minimum commom step between updating data
 iDtData_Updating = 3600
@@ -168,23 +168,23 @@ iTVeg = 720
 
 ! TIME INFO -------------------------------------------------------------------------------------
 ! Start time (yyyymmddHHMM format)
-sTimeStart=202303010000
+sTimeStart=202203080000
 ! Re-start time (yyyymmddHHMM format)
-sTimeRestart=202302282300
+sTimeRestart=202203072300
 ! -----------------------------------------------------------------------------------------------
 
 ! PATH(S) INFO ----------------------------------------------------------------------------------
 ! DATA STATIC
 ! Static gridded data path (land data)
-sPathData_Static_Gridded="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/data/data_static/land/"
+sPathData_Static_Gridded="/home/fabio/Desktop/HMC_Package/data/geo/"
 ! Static point data path (point info file and dam Tank-Volume curve)
-sPathData_Static_Point="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/data/data_static/point/"
+sPathData_Static_Point="/home/fabio/Desktop/HMC_Package/data/geo/"
 
 ! DATA DYNAMIC
 ! Forcing gridded data path
-sPathData_Forcing_Gridded="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/data/data_dynamic/$yyyy/$mm/$dd/"
+sPathData_Forcing_Gridded="/home/fabio/Desktop/HMC_Package/data/meteo/{sub_path_dynamic_src_grid}/"
 ! Forcing point data path
-sPathData_Forcing_Point="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/data/data_dynamic/$yyyy/$mm/$dd/"
+sPathData_Forcing_Point="/home/fabio/Desktop/HMC_Package/data/meteo/{sub_path_dynamic_src_point}/"
 ! Forcing time-series data path
 sPathData_Forcing_TimeSeries="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/data/data_dynamic/"
 
@@ -192,9 +192,9 @@ sPathData_Forcing_TimeSeries="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opcha
 sPathData_Updating_Gridded="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/data/data_dynamic/$yyyy/$mm/$dd/"
 
 ! Output gridded data path
-sPathData_Output_Gridded="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/archive/data_outcome/gridded/$yyyy/$mm/$dd/"
+sPathData_Output_Gridded="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/archive/data_outcome/gridded/{sub_path_dynamic_dst_grid}/"
 ! Output point data path
-sPathData_Output_Point="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/archive/data_outcome/point/$yyyy/$mm/$dd/"
+sPathData_Output_Point="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/archive/data_outcome/point/{sub_path_dynamic_src_point}"
 ! Output time-series data path
 sPathData_Output_TimeSeries="/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_italy/archive/data_outcome/time-series/"
 

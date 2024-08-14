@@ -10,18 +10,16 @@ from hmc.generic_toolkit.data.lib_io_nc import get_file_grid as get_file_grid_nc
 
 import matplotlib.pylab as plt
 
+
 class IOHandler:
 
+    type_class = 'io_base'
     type_data = {'ascii': get_file_grid_ascii, 'tiff': get_file_grid_tiff, 'netCDF': get_file_grid_nc}
 
-    def __init__(self, folder_name: str, file_name: str,
-                 time: Optional[datetime] = None, format: Optional[None] = None) -> None:
+    def __init__(self, folder_name: str, file_name: str, format: Optional[None] = None) -> None:
 
         self.folder_name = folder_name
         self.file_name = file_name
-        self.path_name = os.path.join(self.folder_name, self.file_name)
-
-        self.time = time
 
         self.format = format if format is not None else self.file_name.split('.')[-1]
         if self.format.lower() in ['tif', 'tiff', 'geotiff']:
@@ -37,8 +35,8 @@ class IOHandler:
 
     @classmethod
     def from_path(cls, path: str, time: Optional[datetime] = None, format: Optional[None] = None):
-        folder_name, file_name = os.path.split(path)
-        return cls(folder_name, file_name, time, format)
+        path, file = os.path.split(path)
+        return cls(path, file)
 
     def get_data(self,
                  row_start: int = None, row_end: int = None,
@@ -48,11 +46,15 @@ class IOHandler:
         Get the data for a given time.
         """
 
-        flag_data = self.check_data(mandatory=mandatory)
-        obj_data = self.fx_data(self.path_name)
+        path_name = os.path.join(self.folder_name, self.file_name)
 
-        if row_start is not None and row_end is not None and col_start is not None and col_end is not None:
-            obj_data = obj_data.isel(latitude=slice(row_start, row_end), longitude=slice(col_start, col_end))
+        obj_flag = self.check_data(path_name=path_name, mandatory=mandatory)
+        if obj_flag:
+            obj_data = self.fx_data(path_name)
+            if row_start is not None and row_end is not None and col_start is not None and col_end is not None:
+                obj_data = obj_data.isel(latitude=slice(row_start, row_end), longitude=slice(col_start, col_end))
+        else:
+            obj_data = None
 
         return obj_data
 
@@ -94,15 +96,30 @@ class IOHandler:
         obj_data.plot()
         plt.colorbar()
 
-
-    def check_data(self, mandatory: bool = False, **kwargs) -> bool:
+    def check_data(self, path_name : str, mandatory: bool = False, **kwargs) -> bool:
         """
         Check if data is available for a given time.
         """
-        if os.path.exists(self.path_name):
+        if os.path.exists(path_name):
             return True
         else:
             if mandatory:
-                raise IOError(f'File {self.path_name} not found.')
+                raise IOError(f'File {path_name} not found.')
             return False
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+# method to map tags data to template
+def map_tags(tags_data: dict, tags_template: dict) -> dict:
+    """
+    Map the tags data to the template.
+    :param tags_data:
+    :param tags_template:
+    :return:
+    """
+    tags_file = {}
+    for tag_key, tag_value in tags_data.items():
+        if tag_key in tags_template.keys():
+            tags_file[tag_key] = tag_value
+    return tags_file
+# ----------------------------------------------------------------------------------------------------------------------

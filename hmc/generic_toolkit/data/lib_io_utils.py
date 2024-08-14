@@ -11,32 +11,33 @@ Version:       '1.0.0'
 # libraries
 import logging
 from datetime import datetime
-import os
 
 import pandas as pd
 import xarray as xr
+
+from hmc.generic_toolkit.default.lib_default_generic import tags_date_conversion
 # ----------------------------------------------------------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# method to substitute string
-def substitute_string(string, tag_dict, rec=False):
-    """
-    replace the {tags} in the string with the values in the tag_dict
-    """
-    while "{" in string and "}" in string:
-        for key, value in tag_dict.items():
-            # check if the value is a datetime object and the string contains a format specifier for the key
-            if isinstance(value, datetime) and '{' + key + ':' in string:
-                # extract the format specifier from the string
-                fmt = string.split('{' + key + ':')[1].split('}')[0]
-                # format the value using the format specifier
-                value = value.strftime(fmt)
-                key = key + ':' + fmt
-            # replace the bracketed part with the value
-            string = string.replace('{' + key + '}', str(value))
-        if not rec:
-            break
+# method to substitute string by tags
+def substitute_string_by_tags(string: str, tags: dict = {}) -> str:
+    for key, value in tags.items():
+        key = '{' + key + '}'
+        string = string.replace(key, value)
+    return string
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# method to substitute string by date
+def substitute_string_by_date(string, date: pd.Timestamp, tags_template: dict = {}):
+    if date is not None:
+        for tag_key, tag_value in tags_template.items():
+            tag_key = '{' + tag_key + '}'
+            if tag_key in string:
+                date_str = date.strftime(tag_value)
+                string = string.replace(tag_key, date_str)
     return string
 # ----------------------------------------------------------------------------------------------------------------------
 

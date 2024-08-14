@@ -4,6 +4,8 @@ import pandas as pd
 from hmc.generic_toolkit.namelist.lib_namelist_utils import filter_settings, group_settings, parse_settings
 from hmc.generic_toolkit.default.lib_default_namelist import convert_namelist_keys
 
+from hmc.generic_toolkit.template import template_tags, template_data_static, template_data_dynamic
+
 
 class NamelistHandler:
 
@@ -29,6 +31,10 @@ class NamelistHandler:
             settings_group_parsed, variable_type='default', group_type='default')
 
         return settings_group_converted
+
+    @staticmethod
+    def get_template_default():
+        return template_tags, template_data_static, template_data_dynamic
 
     def error_data(self):
         """
