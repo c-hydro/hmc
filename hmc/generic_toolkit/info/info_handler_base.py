@@ -6,7 +6,6 @@ from typing import Optional
 
 from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date, substitute_string_by_tags
 from hmc.generic_toolkit.data.io_handler_base import IOHandler
-from hmc.generic_toolkit.data.io_handler_base import map_tags
 
 
 class IOWrapper(IOHandler):
@@ -42,6 +41,8 @@ class InfoHandler(IOWrapper):
 
         if file_template is None:
             file_template = {}
+        if file_tags is None:
+            file_tags = {}
 
         folder_name = substitute_string_by_date(folder_name, file_time, file_template)
         file_name = substitute_string_by_date(file_name, file_time, file_template)
@@ -59,6 +60,5 @@ class InfoHandler(IOWrapper):
         file_data = self.get_data(
             row_start=None, row_end=None, col_start=None, col_end=None, mandatory=self.file_mandatory
         )
-        file_info = file_data.attrs
 
-        return file_info
+        return file_data

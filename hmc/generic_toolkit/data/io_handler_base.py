@@ -58,6 +58,12 @@ class IOHandler:
 
         return obj_data
 
+    def fill_data(self, default_value: (int, float) = np.nan) -> xr.DataArray:
+        """
+        Fill the data for a given .
+        """
+        raise NotImplementedError
+
     def error_data(self):
         """
         Error data.
@@ -73,7 +79,8 @@ class IOHandler:
     def view_data(self, obj_data: (xr.DataArray, xr.Dataset),
                   var_name: str = None,
                   var_data_min: (int, float) = None, var_data_max: (int, float) = None,
-                  var_fill_data: (int, float) = np.nan, var_null_data: (int, float) = np.nan, **kwargs) -> None:
+                  var_fill_data: (int, float) = np.nan, var_null_data: (int, float) = np.nan,
+                  view_type: str = 'data_array', **kwargs) -> None:
         """
         View the data for a given time.
         """
@@ -92,9 +99,16 @@ class IOHandler:
         if var_fill_data is not None and var_null_data is not None:
             obj_data = obj_data.where(obj_data != var_null_data, var_null_data)
 
-        plt.figure()
-        obj_data.plot()
-        plt.colorbar()
+        if view_type == 'data_array':
+            plt.figure()
+            obj_data.plot()
+            plt.colorbar()
+        elif view_type == 'array':
+            plt.figure()
+            plt.imshow(obj_data.values)
+            plt.colorbar()
+        else:
+            raise ValueError(f'View type {view_type} not supported.')
 
     def check_data(self, path_name : str, mandatory: bool = False, **kwargs) -> bool:
         """
@@ -106,20 +120,3 @@ class IOHandler:
             if mandatory:
                 raise IOError(f'File {path_name} not found.')
             return False
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# method to map tags data to template
-def map_tags(tags_data: dict, tags_template: dict) -> dict:
-    """
-    Map the tags data to the template.
-    :param tags_data:
-    :param tags_template:
-    :return:
-    """
-    tags_file = {}
-    for tag_key, tag_value in tags_data.items():
-        if tag_key in tags_template.keys():
-            tags_file[tag_key] = tag_value
-    return tags_file
-# ----------------------------------------------------------------------------------------------------------------------

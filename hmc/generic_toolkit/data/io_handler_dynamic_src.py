@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from typing import Optional
 
-from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date
+from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date, substitute_string_by_tags
 from hmc.generic_toolkit.data.io_handler_base import IOHandler
 from hmc.generic_toolkit.data.zip_handler_base import ZipHandler
 
@@ -41,11 +41,19 @@ class DynamicSrcHandler(ZipWrapper, IOWrapper):
             super().from_path(self.file_name_compress)
 
     @classmethod
-    def organize_file_obj(cls, folder_name: str, file_name: str = 'hmc.forcing-grid.{datetime_dynamic_src_grid}.nc.gz',
-                          file_time: pd.Timestamp = None,
-                          file_mandatory: bool = True, file_template: dict = None):
+    def organize_file_data(cls, folder_name: str, file_name: str = 'hmc.forcing-grid.{datetime_dynamic_src_grid}.nc.gz',
+                           file_time: pd.Timestamp = None,
+                           file_tags: dict = None,
+                           file_mandatory: bool = True, file_template: dict = None):
 
+        if file_tags is None:
+            file_tags = {}
+        if file_template is None:
+            file_template = {}
+
+        folder_name = substitute_string_by_tags(folder_name, file_tags)
         folder_name = substitute_string_by_date(folder_name, file_time, file_template)
+        file_name = substitute_string_by_tags(file_name, file_tags)
         file_name = substitute_string_by_date(file_name, file_time, file_template)
 
         if file_mandatory:

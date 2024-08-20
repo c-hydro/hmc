@@ -13,6 +13,13 @@ from hmc.generic_toolkit.args.lib_args_utils import get_options
 from hmc.generic_toolkit.log import log_handler_base
 from hmc.generic_toolkit.namelist import namelist_handler_base
 from hmc.generic_toolkit.time import time_handler_base
+from hmc.generic_toolkit.info import info_handler_base
+
+from hmc.hydrological_toolkit.default import config_phys_constants_lsm
+from hmc.hydrological_toolkit.default import config_phys_constants_snow
+
+from hmc.driver_data_static import StaticDriver
+from hmc.driver_data_dynamic import DynamicDriver
 
 from hmc.generic_toolkit.data import io_handler_static
 from hmc.generic_toolkit.data import io_handler_dynamic_src
@@ -56,15 +63,31 @@ def hmc_main():
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
-    # method to define static handler
-    data_static_grid = io_handler_static.StaticHandler.organize_file_obj(
-        folder_name=namelist_obj['settings']['path_data_static_grid'],
-        file_collections=namelist_data_static_obj.static_data_grid,
+    # method to define info static handler
+    info_handler = info_handler_base.InfoHandler.organize_file_obj(
+        folder_name=namelist_obj['settings']['path_data_static_grid'], file_name='{domain_name}.dem.txt',
+        file_tags={'domain_name':  namelist_obj['parameters']['domain_name']},
+        file_template=namelist_tags_obj.tags_string)
+    reference_static_obj = info_handler.get_file_info()
+
+    # method to define info dynamic handler
+    info_handler = info_handler_base.InfoHandler.organize_file_obj(
+        folder_name=namelist_obj['settings']['path_data_dynamic_src_grid'],
+        file_name='hmc.forcing-grid.{datetime_dynamic_src_grid}.nc',
+        file_time=namelist_obj['settings']['time_start'],
         file_tags={'domain_name': namelist_obj['parameters']['domain_name']},
-        file_template=namelist_tags_obj)
+        file_template={**namelist_tags_obj.tags_string, **namelist_tags_obj.tags_time})
+    reference_dynamic_obj = info_handler.get_file_info()
+    # ------------------------------------------------------------------------------------------------------------------
 
-    print('geo application ... ')
-
+    # ------------------------------------------------------------------------------------------------------------------
+    # driver static data
+    driver_data_static = StaticDriver(
+        obj_namelist=namelist_obj,
+        obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
+        obj_reference=reference_static_obj)
+    # method to organize static data
+    dset_data_static_obj = driver_data_static.organize_data(namelist_data_static_obj, namelist_tags_obj)
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -73,14 +96,14 @@ def hmc_main():
 
         if time_step == time_handler.time_data_src_grid:
 
-            io_dynamic_src_grid_handler = io_handler_dynamic_src.DynamicSrcHandler.organize_file_obj(
-                folder_name=namelist_obj['settings']['path_data_dynamic_src_grid'],
-                file_name=namelist_data_dynamic_obj.dynamic_data_grid['dynamic_src_grid']['file'],
-                file_mandatory=namelist_data_dynamic_obj.dynamic_data_grid['dynamic_src_grid']['mandatory'],
-                file_time=time_step,
-                file_template=namelist_tags_obj.tags_time)
-
-            data_dynamic_grid_src = io_dynamic_src_grid_handler.get_file_data()
+            # driver dynamic data
+            driver_data_dynamic = DynamicDriver(
+                obj_namelist=namelist_obj,
+                obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
+                obj_reference=reference_dynamic_obj)
+            # method to organize dynamic data
+            dset_data_dynamic_src_obj = driver_data_dynamic.organize_data(
+                time_step, namelist_data_dynamic_obj, namelist_tags_obj)
 
             time_handler.time_data_src_grid = time_handler.get_next_time(
                 time_handler.time_data_src_grid, time_handler.dt_data_src_grid)

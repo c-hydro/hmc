@@ -14,7 +14,6 @@ def main(file_name: str = None, folder_name: str = None):
         file_tags={'domain_name': 'bisagno'})
     data_static_grid = io_static_handler.get_file_data()
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 
 
