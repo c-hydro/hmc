@@ -11,7 +11,7 @@ Version:       '1.0.0'
 # definition of zip extension
 zip_extension = '.gz'
 
-# definition of default string tags
+# definition of constants string tags
 tags_date_conversion = {
     '$yyyy':    '%Y',
     '$mm':      '%m',

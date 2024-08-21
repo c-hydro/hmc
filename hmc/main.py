@@ -15,8 +15,8 @@ from hmc.generic_toolkit.namelist import namelist_handler_base
 from hmc.generic_toolkit.time import time_handler_base
 from hmc.generic_toolkit.info import info_handler_base
 
-from hmc.hydrological_toolkit.default import config_phys_constants_lsm
-from hmc.hydrological_toolkit.default import config_phys_constants_snow
+from hmc.hydrological_toolkit.constants import phys_constants_lsm
+from hmc.hydrological_toolkit.constants import phys_constants_snow
 
 from hmc.driver_data_static import StaticDriver
 from hmc.driver_data_dynamic import DynamicDriver

@@ -39,7 +39,7 @@ class LoggerHandler(logging.Logger):
             self.addHandler(log_handler_file)
 
     @classmethod
-    def set_level(cls, log_name: str = 'default', log_level: str = 'INFO'):
+    def set_level(cls, log_name: str = 'constants', log_level: str = 'INFO'):
         log_level = map_debug_level.get(log_level, cls.key_error)
         return cls(log_name=log_name, log_level=log_level)
 

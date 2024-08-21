@@ -29,6 +29,10 @@ class DynamicDriver(IOHandler):
         else:
             self.obj_tags = obj_tags
 
+        self.obj_vars_data = ['Rain', 'AirTemperature', 'IncomingRadiation', 'Wind', 'RelativeHumidity']
+        self.obj_vars_map = {'Rain': 'rain', 'AirTemperature': 'airt',
+                             'IncomingRadiation': 'inc_rad', 'Wind': 'wind', 'RelativeHumidity': 'rh'}
+
     # method to organize data
     def organize_data(self, data_time: pd.Timestamp, data_collections: dict, data_template: dict):
 
@@ -41,8 +45,10 @@ class DynamicDriver(IOHandler):
         file_name = dynamic_collections['file']
         file_mandatory = dynamic_collections['mandatory']
         file_type = dynamic_collections['type']
-        file_default = dynamic_collections['default']
+        file_default = dynamic_collections['constants']
         file_no_data = dynamic_collections['no_data']
+        file_vars_list = dynamic_collections['vars_list']
+        file_vars_mapping = dynamic_collections['vars_mapping']
 
         folder_name = substitute_string_by_tags(folder_name, string_tags)
         folder_name = substitute_string_by_date(folder_name, data_time, dynamic_tags)
@@ -52,11 +58,11 @@ class DynamicDriver(IOHandler):
         io_dynamic_src_grid_handler = DynamicSrcHandler.organize_file_data(
             folder_name=folder_name,
             file_name=file_name,
-            file_mandatory=file_mandatory
+            file_mandatory=file_mandatory,
+            file_vars_list=file_vars_list, file_vars_mapping=file_vars_mapping
         )
 
         file_dset = io_dynamic_src_grid_handler.get_file_data()
-
         file_dset = mask_data_boundaries(file_dset, bounds_value=file_no_data)
 
         return file_dset

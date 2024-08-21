@@ -45,7 +45,7 @@ class StaticDriver(IOHandler):
             file_name = file_collections['file']
             file_mandatory = file_collections['mandatory']
             file_type = file_collections['type']
-            file_default = file_collections['default']
+            file_default = file_collections['constants']
             file_no_data = file_collections['no_data']
 
             folder_name = substitute_string_by_tags(folder_name, string_tags)

@@ -1,4 +1,6 @@
+# libraries
 import os
+import warnings
 from typing import Optional
 from datetime import datetime
 import numpy as np
@@ -16,25 +18,29 @@ class IOHandler:
     type_class = 'io_base'
     type_data = {'ascii': get_file_grid_ascii, 'tiff': get_file_grid_tiff, 'netCDF': get_file_grid_nc}
 
-    def __init__(self, folder_name: str, file_name: str, format: Optional[None] = None) -> None:
+    def __init__(self, folder_name: str, file_name: str,
+                 file_format: Optional[str] = None,
+                 vars_list: Optional[list] = None, vars_mapping: Optional[dict] = None, **kwargs) -> None:
 
         self.folder_name = folder_name
         self.file_name = file_name
 
-        self.format = format if format is not None else self.file_name.split('.')[-1]
-        if self.format.lower() in ['tif', 'tiff', 'geotiff']:
-            self.format = 'tiff'
-        elif self.format.lower() in ['txt', 'asc']:
-            self.format = 'ascii'
-        elif self.format.lower() in ['nc', 'netcdf']:
-            self.format = 'netCDF'
+        self.file_format = file_format if file_format is not None else self.file_name.split('.')[-1]
+        if self.file_format.lower() in ['tif', 'tiff', 'geotiff']:
+            self.file_format = 'tiff'
+        elif self.file_format.lower() in ['txt', 'asc']:
+            self.file_format = 'ascii'
+        elif self.file_format.lower() in ['nc', 'netcdf']:
+            self.file_format = 'netCDF'
         else:
-            raise ValueError(f'Format {self.format} not supported.')
+            raise ValueError(f'Format {self.file_format} not supported.')
 
-        self.fx_data = self.type_data.get(self.format, self.error_data)
+        self.fx_data = self.type_data.get(self.file_format, self.error_data)
+        self.vars_list = vars_list
+        self.vars_mapping = vars_mapping
 
     @classmethod
-    def from_path(cls, path: str, time: Optional[datetime] = None, format: Optional[None] = None):
+    def from_path(cls, path: str, format: Optional[None] = None, **kwargs):
         path, file = os.path.split(path)
         return cls(path, file)
 
@@ -56,6 +62,34 @@ class IOHandler:
         else:
             obj_data = None
 
+        return obj_data
+
+    def filter_data(self, obj_data: xr.Dataset) -> xr.Dataset:
+        vars_list = self.vars_list
+        if vars_list is not None:
+            if isinstance(obj_data, xr.Dataset):
+                vars_data = list(obj_data.variables)
+                vars_found = []
+                for var_name in vars_list:
+                    if var_name in vars_data:
+                        vars_found.append(var_name)
+                    else:
+                        warnings.warn(f'Variable {var_name} not found in dataset.')
+                obj_data = obj_data[vars_found]
+        return obj_data
+
+    def map_data(self, obj_data: xr.Dataset) -> xr.Dataset:
+        vars_mapping = self.vars_mapping
+        if vars_mapping is not None:
+            if isinstance(obj_data, xr.Dataset):
+                vars_data = list(obj_data.variables)
+                vars_found = {}
+                for var_name_in, var_name_out in vars_mapping.items():
+                    if var_name_in in vars_data:
+                        vars_found[var_name_in] = var_name_out
+                    else:
+                        warnings.warn(f'Variable {var_name_in} not found in dataset.')
+                obj_data = obj_data.rename(vars_found)
         return obj_data
 
     def fill_data(self, default_value: (int, float) = np.nan) -> xr.DataArray:

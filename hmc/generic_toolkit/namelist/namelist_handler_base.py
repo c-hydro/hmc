@@ -28,7 +28,7 @@ class NamelistHandler:
         settings_group_parsed = parse_settings(settings_group_raw)
 
         settings_group_converted = convert_namelist_keys(
-            settings_group_parsed, variable_type='default', group_type='default')
+            settings_group_parsed, variable_type='constants', group_type='constants')
 
         return settings_group_converted
 

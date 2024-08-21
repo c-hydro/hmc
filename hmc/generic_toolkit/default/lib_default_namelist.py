@@ -37,25 +37,25 @@ namelist_group_default = {
 
 
 # namelist map selector
-namelist_variable_type = {'default': namelist_variable_default}
+namelist_variable_type = {'constants': namelist_variable_default}
 # namelist map selector
-namelist_group_type = {'default': namelist_group_default}
+namelist_group_type = {'constants': namelist_group_default}
 
 
 # method to import namelist map
-def map_namelist_variable(type: str = 'default') -> dict:
+def map_namelist_variable(type: str = 'constants') -> dict:
     namelist_variable_map = namelist_variable_type.get(type, None)
     return namelist_variable_map
 
 
-def map_namelist_group(type: str = 'default') -> dict:
+def map_namelist_group(type: str = 'constants') -> dict:
     namelist_group_map = namelist_group_type.get(type, None)
     return namelist_group_map
 
 
 # method to convert namelist keys
 def convert_namelist_keys(settings_namelist_in: dict,
-                          variable_type: str = 'default', group_type: str = 'default') -> dict:
+                          variable_type: str = 'constants', group_type: str = 'constants') -> dict:
 
     namelist_variable_map = map_namelist_variable(type=variable_type)
     namelist_group_map = map_namelist_group(type=group_type)
