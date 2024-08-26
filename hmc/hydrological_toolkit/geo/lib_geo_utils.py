@@ -13,26 +13,40 @@ def mask_data_boundaries(obj_data: (xr.DataArray, xr.Dataset), bounds_value: (fl
         obj_data.values[:, -1] = bounds_value
     elif isinstance(obj_data, xr.Dataset):
         for var_name, var_data in obj_data.items():
-
-            print(var_name)
-
             var_data.values[0, :] = bounds_value
             var_data.values[-1, :] = bounds_value
             var_data.values[:, 0] = bounds_value
             var_data.values[:, -1] = bounds_value
-
             obj_data[var_name] = var_data
-
     return obj_data
 
 
 # method to mask data by reference
 def mask_data_by_reference(da_other: xr.DataArray, da_reference: xr.DataArray,
-                           mask_value: (float, int) = None) -> xr.DataArray:
+                           mask_method: str = ('>', '<', '>=', '<=', '==', '!='),
+                           mask_value: (float, int) = None,
+                           mask_other: (float, int, xr.DataArray) = None) -> xr.DataArray:
 
     if mask_value is None:
         mask_value = -9999.0
-    da_other = da_other.where(da_reference != mask_value, mask_value)
+    if mask_other is None:
+        mask_other = 0.0
+
+    if mask_value is not None:
+        if mask_method == '!=':
+            da_other = da_other.where(da_reference != mask_value, mask_other)
+        elif mask_method == '==':
+            da_other = da_other.where(da_reference == mask_value, mask_other)
+        elif mask_method == '>':
+            da_other = da_other.where(da_reference > mask_value, mask_other)
+        elif mask_method == '<':
+            da_other = da_other.where(da_reference < mask_value, mask_other)
+        elif mask_method == '>=':
+            da_other = da_other.where(da_reference >= mask_value, mask_other)
+        elif mask_method == '<=':
+            da_other = da_other.where(da_reference <= mask_value, mask_other)
+        else:
+            raise ValueError(f'Condition {mask_method} not supported.')
 
     return da_other
 

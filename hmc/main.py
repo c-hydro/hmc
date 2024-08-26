@@ -18,8 +18,12 @@ from hmc.generic_toolkit.info import info_handler_base
 from hmc.hydrological_toolkit.constants import phys_constants_lsm
 from hmc.hydrological_toolkit.constants import phys_constants_snow
 
+from hmc.driver_variables import VariablesDriver
 from hmc.driver_data_static import StaticDriver
 from hmc.driver_data_dynamic import DynamicDriver
+
+from hmc.driver_geo_main import GeoDriver
+from hmc.driver_phys_main import PhysDriver
 
 from hmc.generic_toolkit.data import io_handler_static
 from hmc.generic_toolkit.data import io_handler_dynamic_src
@@ -81,6 +85,13 @@ def hmc_main():
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
+    # driver variables
+    driver_variables = VariablesDriver(parameters=namelist_obj['parameters'], da_reference=reference_static_obj)
+    variables_geo = driver_variables.initialize_variables_geo()
+    variables_phys = driver_variables.initialize_variables_phys()
+    # ------------------------------------------------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------------------------------------------------
     # driver static data
     driver_data_static = StaticDriver(
         obj_namelist=namelist_obj,
@@ -89,6 +100,10 @@ def hmc_main():
     # method to organize static data
     dset_data_static_obj = driver_data_static.organize_data(namelist_data_static_obj, namelist_tags_obj)
     # ------------------------------------------------------------------------------------------------------------------
+
+    # driver physics geo
+    driver_geo = GeoDriver(dset_data_static_obj, reference_static_obj)
+    dset_data_static_obj = driver_geo.wrap_geo()
 
     # ------------------------------------------------------------------------------------------------------------------
     # iterate over times
@@ -104,6 +119,10 @@ def hmc_main():
             # method to organize dynamic data
             dset_data_dynamic_src_obj = driver_data_dynamic.organize_data(
                 time_step, namelist_data_dynamic_obj, namelist_tags_obj)
+
+            # driver physics
+            driver_phys = PhysDriver(dset_data_static_obj, reference_static_obj)
+            dset_data_static_obj = driver_phys.wrap_physics(dset_data_dynamic_src_obj)
 
             time_handler.time_data_src_grid = time_handler.get_next_time(
                 time_handler.time_data_src_grid, time_handler.dt_data_src_grid)

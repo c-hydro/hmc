@@ -4,26 +4,28 @@ import os
 import pandas as pd
 import xarray as xr
 
-from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date, substitute_string_by_tags
+from hmc.hydrological_toolkit.land_surface_model.lsm_handler_base import LSMHandler
 
-from hmc.generic_toolkit.data.io_handler_base import IOHandler
-from hmc.generic_toolkit.data.io_handler_dynamic_src import DynamicSrcHandler
-from hmc.hydrological_toolkit.geo.lib_geo_utils import (
-    mask_data_by_reference, mask_data_boundaries,
-    initialize_data_by_constant, initialize_data_by_default, initialize_data_by_reference)
 # ----------------------------------------------------------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# class to handle physics driver
+# class to handle driver physics
 class PhysDriver(object):
 
-    def __init__(self) -> None:
+    def __init__(self, dset_data_geo: xr.Dataset, da_reference: xr.DataArray) -> None:
 
-        self.phys_main = True
+        self.dset_data_geo = dset_data_geo
+        self.da_reference = da_reference
 
     # method to wrap physics routine(s)
-    def wrap_physics(self, data_dynamic_src_grid: xr.Dataset, data_static_grid: xr.Dataset) -> xr.Dataset:
+    def wrap_physics(self, dset_data_dynamic_src: xr.Dataset) -> xr.Dataset:
 
-        print()
+        # class of land surface model
+        driver_phys_lsm = LSMHandler(dset_geo=self.dset_data_geo, da_reference=self.da_reference)
+        # execute lsm routine(s)
+        driver_phys_lsm.execute(dset_data_dynamic_src)
+
+
+        return True
 # ----------------------------------------------------------------------------------------------------------------------

@@ -69,7 +69,8 @@ class StaticDriver(IOHandler):
                         condition_method='<', condition_value=0,
                         constant_value=file_default_value)
 
-            grid_da = mask_data_by_reference(grid_da, self.obj_reference)
+            grid_da = mask_data_by_reference(
+                grid_da, self.obj_reference, mask_method='==', mask_value=file_no_data, mask_other=grid_da)
 
             grid_da = mask_data_boundaries(grid_da, bounds_value=file_no_data)
 
@@ -80,6 +81,7 @@ class StaticDriver(IOHandler):
 
         return file_dset
 # ----------------------------------------------------------------------------------------------------------------------
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # method to map tags data to template

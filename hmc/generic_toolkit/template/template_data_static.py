@@ -79,11 +79,11 @@ static_data_grid = {
     "vars_list": None,
     "vars_mapping": None
   },
-  "uh": {
-    "file": "{domain_name}.uh.txt",
-    "mandatory": False,
+  "area_cell": {
+    "file": "{domain_name}.areacell.txt",
+    "mandatory": True,
     "type": "raster",
-    "constants": "uh",
+    "constants": None,
     "no_data": -9999.0,
     "vars_list": None,
     "vars_mapping": None
