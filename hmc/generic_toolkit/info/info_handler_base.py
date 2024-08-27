@@ -6,6 +6,13 @@ from typing import Optional
 
 from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date, substitute_string_by_tags
 from hmc.generic_toolkit.data.io_handler_base import IOHandler
+from hmc.generic_toolkit.data.zip_handler_base import ZipHandler
+
+
+class ZipWrapper(ZipHandler):
+    def __init__(self, file_name_compress: str, file_name_uncompress: str = None,
+                 zip_extension: str = '.gz') -> None:
+        super().__init__(file_name_compress, file_name_uncompress, zip_extension)
 
 
 class IOWrapper(IOHandler):
@@ -18,7 +25,7 @@ class IOWrapper(IOHandler):
         return super().__init__(path, file, format)
 
 
-class InfoHandler(IOWrapper):
+class InfoHandler(ZipWrapper, IOWrapper):
 
     type_class = 'info_base'
 
@@ -30,7 +37,13 @@ class InfoHandler(IOWrapper):
         self.file_mandatory = file_mandatory
         self.file_type = file_type
 
-        super().from_path(os.path.join(self.folder_name, self.file_name))
+        super().__init__(file_name_compress=os.path.join(folder_name, file_name), file_name_uncompress=None,
+                         zip_extension='.gz')
+
+        if self.zip_check:
+            super().from_path(self.file_name_uncompress)
+        else:
+            super().from_path(self.file_name_compress)
 
     @classmethod
     def organize_file_obj(cls,
@@ -57,8 +70,12 @@ class InfoHandler(IOWrapper):
 
     def get_file_info(self):
 
-        file_data = self.get_data(
-            row_start=None, row_end=None, col_start=None, col_end=None, mandatory=self.file_mandatory
-        )
+        check_data = self.uncompress_file_name()
+        if check_data is not None:
+            file_data = self.get_data(
+                row_start=None, row_end=None, col_start=None, col_end=None, mandatory=self.file_mandatory)
+        else:
+            file_data = self.get_data(
+                row_start=None, row_end=None, col_start=None, col_end=None, mandatory=self.file_mandatory)
 
         return file_data

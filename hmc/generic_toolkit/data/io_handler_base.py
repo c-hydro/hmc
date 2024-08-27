@@ -7,6 +7,7 @@ import numpy as np
 import xarray as xr
 
 from hmc.generic_toolkit.data.lib_io_ascii import get_file_grid as get_file_grid_ascii
+from hmc.generic_toolkit.data.lib_io_ascii import get_file_array as get_file_array_ascii
 from hmc.generic_toolkit.data.lib_io_tiff import get_file_grid as get_file_grid_tiff
 from hmc.generic_toolkit.data.lib_io_nc import get_file_grid as get_file_grid_nc
 
@@ -16,14 +17,20 @@ import matplotlib.pylab as plt
 class IOHandler:
 
     type_class = 'io_base'
-    type_data = {'ascii': get_file_grid_ascii, 'tiff': get_file_grid_tiff, 'netCDF': get_file_grid_nc}
+    type_data_grid = {'ascii': get_file_grid_ascii, 'tiff': get_file_grid_tiff, 'netCDF': get_file_grid_nc}
+    type_data_array = {'ascii': get_file_array_ascii}
 
     def __init__(self, folder_name: str, file_name: str,
+                 file_type: str = 'raster',
                  file_format: Optional[str] = None,
                  vars_list: Optional[list] = None, vars_mapping: Optional[dict] = None, **kwargs) -> None:
 
+        if file_type is None:
+            file_type = 'raster'
+
         self.folder_name = folder_name
         self.file_name = file_name
+        self.file_type = file_type
 
         self.file_format = file_format if file_format is not None else self.file_name.split('.')[-1]
         if self.file_format.lower() in ['tif', 'tiff', 'geotiff']:
@@ -35,7 +42,12 @@ class IOHandler:
         else:
             raise ValueError(f'Format {self.file_format} not supported.')
 
-        self.fx_data = self.type_data.get(self.file_format, self.error_data)
+        if self.file_type == 'raster':
+            self.fx_data = self.type_data_grid.get(self.file_format, self.error_data)
+        elif self.file_type == 'array':
+            self.fx_data = self.type_data_array.get(self.file_format, self.error_data)
+        else:
+            raise ValueError(f'Type {self.file_type} not supported.')
         self.vars_list = vars_list
         self.vars_mapping = vars_mapping
 

@@ -7,14 +7,15 @@ from typing import Optional
 
 from hmc.generic_toolkit.data.io_handler_base import IOHandler
 
+
 class IOWrapper(IOHandler):
     def __init__(self, folder_name: str, file_name: str,
                  file_format: Optional[None] = None) -> None:
         super().__init__(folder_name, file_name, file_format)
 
-    def from_path(self, path: str, time: Optional[pd.Timestamp] = None, format: Optional[None] = None):
-        path, file = os.path.split(path)
-        return super().__init__(path, file, format)
+    def from_path(self, file_path: str, file_format: str = None):
+        folder_name, file_name = os.path.split(file_path)
+        return super().__init__(folder_name, file_name, file_format)
 
 
 class StaticHandler(IOWrapper):
@@ -29,7 +30,7 @@ class StaticHandler(IOWrapper):
         self.file_mandatory = file_mandatory
         self.file_type = file_type
 
-        super().from_path(os.path.join(self.folder_name, self.file_name))
+        super().from_path(os.path.join(self.folder_name, self.file_name), self.file_type)
 
     @classmethod
     def define_file_data(cls, folder_name: str, file_name: str = '{domain_name}.dem.txt',
@@ -67,11 +68,20 @@ class StaticHandler(IOWrapper):
 
         driver_data = cls(folder_name, file_name, file_mandatory, file_type)
 
-        file_da = driver_data.get_data(
-            ow_start=None, row_end=None, col_start=None, col_end=None, mandatory=file_mandatory
-        )
+        if file_type == 'raster':
 
-        if row_start is not None and row_end is not None and col_start is not None and col_end is not None:
-            file_da = file_da.isel(latitude=slice(row_start, row_end), longitude=slice(col_start, col_end))
+            file_obj = driver_data.get_data(
+                ow_start=None, row_end=None, col_start=None, col_end=None, mandatory=file_mandatory
+            )
 
-        return file_da
+            if row_start is not None and row_end is not None and col_start is not None and col_end is not None:
+                file_obj = file_obj.isel(latitude=slice(row_start, row_end), longitude=slice(col_start, col_end))
+
+        elif file_type == 'array':
+
+            file_obj = driver_data.get_data(mandatory=file_mandatory)
+
+        else:
+            raise ValueError(f'Type {file_type} not supported.')
+
+        return file_obj

@@ -89,11 +89,12 @@ static_data_grid = {
     "vars_mapping": None
   }
 }
-static_data_point = {
+static_data_array = {
   "vegetation_interception": {
     "file": "valori_fo_noIa_AMC2.txt",
     "mandatory": True,
     "type": "array",
+    "constants": None,
     "no_data": None,
     "vars_list": None,
     "vars_mapping": None

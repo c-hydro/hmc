@@ -77,7 +77,7 @@ def hmc_main():
     # method to define info dynamic handler
     info_handler = info_handler_base.InfoHandler.organize_file_obj(
         folder_name=namelist_obj['settings']['path_data_dynamic_src_grid'],
-        file_name='hmc.forcing-grid.{datetime_dynamic_src_grid}.nc',
+        file_name='hmc.forcing-grid.{datetime_dynamic_src_grid}.nc.gz',
         file_time=namelist_obj['settings']['time_start'],
         file_tags={'domain_name': namelist_obj['parameters']['domain_name']},
         file_template={**namelist_tags_obj.tags_string, **namelist_tags_obj.tags_time})
@@ -87,7 +87,7 @@ def hmc_main():
     # ------------------------------------------------------------------------------------------------------------------
     # driver variables
     driver_variables = VariablesDriver(parameters=namelist_obj['parameters'], da_reference=reference_static_obj)
-    variables_geo = driver_variables.initialize_variables_geo()
+    variables_geo_data, variable_geo_lsm = driver_variables.initialize_variables_geo()
     variables_phys = driver_variables.initialize_variables_phys()
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ def hmc_main():
         obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
         obj_reference=reference_static_obj)
     # method to organize static data
-    dset_data_static_obj = driver_data_static.organize_data(namelist_data_static_obj, namelist_tags_obj)
+    dset_data_static_obj, array_data_static_obj = driver_data_static.organize_data(namelist_data_static_obj, namelist_tags_obj)
     # ------------------------------------------------------------------------------------------------------------------
 
     # driver physics geo

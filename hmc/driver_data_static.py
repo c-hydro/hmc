@@ -1,6 +1,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # libraries
 import os
+
+import pandas as pd
 import xarray as xr
 
 from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date, substitute_string_by_tags
@@ -31,7 +33,7 @@ class StaticDriver(IOHandler):
     # method to organize data
     def organize_data(self, data_collections: dict, data_template: dict):
 
-        static_collections = data_collections.static_data_grid
+        static_collections = {**data_collections.static_data_grid, **data_collections.static_data_array}
         static_tags = data_template.tags_string
 
         string_tags = map_tags(self.obj_tags, static_tags)
@@ -39,8 +41,10 @@ class StaticDriver(IOHandler):
         folder_name = self.obj_namelist_settings['path_data_static_grid']
         folder_name = substitute_string_by_tags(folder_name, string_tags)
 
-        file_dset = None
+        file_collections_grid, file_collections_array = None, None
         for file_key, file_collections in static_collections.items():
+
+            print('file_key:', file_key)
 
             file_name = file_collections['file']
             file_mandatory = file_collections['mandatory']
@@ -51,35 +55,47 @@ class StaticDriver(IOHandler):
             folder_name = substitute_string_by_tags(folder_name, string_tags)
             file_name = substitute_string_by_tags(file_name, string_tags)
 
-            grid_da = StaticHandler.organize_file_data(
+            obj_data = StaticHandler.organize_file_data(
                 folder_name=folder_name,
                 file_name=file_name,
                 file_mandatory=file_mandatory,
                 file_type=file_type,
                 row_start=None, row_end=None, col_start=None, col_end=None)
 
-            if grid_da is None:
-                grid_da = initialize_data_by_reference(da_reference=self.obj_reference, default_value=file_no_data)
+            if file_type == 'raster':
 
-            if file_default is not None:
-                if file_default in list(self.obj_namelist_parameters.keys()):
-                    file_default_value = self.obj_namelist_parameters[file_default]
-                    grid_da = initialize_data_by_constant(
-                        da_other=grid_da, da_reference=self.obj_reference,
-                        condition_method='<', condition_value=0,
-                        constant_value=file_default_value)
+                if obj_data is None:
+                    obj_data = initialize_data_by_reference(da_reference=self.obj_reference, default_value=file_no_data)
 
-            grid_da = mask_data_by_reference(
-                grid_da, self.obj_reference, mask_method='==', mask_value=file_no_data, mask_other=grid_da)
+                if file_default is not None:
+                    if file_default in list(self.obj_namelist_parameters.keys()):
+                        file_default_value = self.obj_namelist_parameters[file_default]
+                        grid_da = initialize_data_by_constant(
+                            da_other=obj_data, da_reference=self.obj_reference,
+                            condition_method='<', condition_value=0,
+                            constant_value=file_default_value)
 
-            grid_da = mask_data_boundaries(grid_da, bounds_value=file_no_data)
+                obj_data = mask_data_by_reference(
+                    obj_data, self.obj_reference, mask_method='==', mask_value=file_no_data, mask_other=obj_data)
 
-            if file_dset is None:
-                file_dset = xr.Dataset()
+                obj_data = mask_data_boundaries(obj_data, bounds_value=file_no_data)
 
-            file_dset[file_key] = grid_da
+                if file_collections_grid is None:
+                    file_collections_grid = xr.Dataset()
 
-        return file_dset
+                file_collections_grid[file_key] = obj_data
+
+            elif file_type == 'array':
+
+                if file_collections_array is None:
+                    file_collections_array = {}
+
+                file_collections_array[file_key] = obj_data
+
+            else:
+                raise ValueError(f'Type {file_type} not supported.')
+
+        return file_collections_grid, file_collections_array
 # ----------------------------------------------------------------------------------------------------------------------
 
 
