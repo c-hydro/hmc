@@ -2,6 +2,7 @@
 # libraries
 import numpy
 import numpy as np
+import pandas as pd
 import xarray as xr
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -61,15 +62,11 @@ def create_dset_from_dict(vars_dict: dict, da_reference: xr.DataArray) -> xr.Dat
 
     dset_data = None
     for var_name, var_data in vars_dict.items():
-
         if var_data is not None:
-
             da_data = xr.DataArray(var_data, coords=[geo_y, geo_x], dims=['latitude', 'longitude'])
-
             if dset_data is None:
                 dset_data = xr.Dataset()
             dset_data[var_name] = da_data
-
         else:
             raise ValueError('Variable "' + var_name + '" is None')
 
@@ -84,4 +81,25 @@ def create_dict_from_dset(dset_data: xr.Dataset) -> dict:
     for var_name, var_data in dset_data.items():
         vars_dict[var_name] = var_data.values
     return vars_dict
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# method to extract values from object
+def extract_values_from_obj(obj_data: (pd.DataFrame, xr.DataArray, xr.Dataset) = None) -> (np.ndarray, dict, None):
+
+    if obj_data is not None:
+        if isinstance(obj_data, pd.DataFrame):
+            return obj_data.values
+        elif isinstance(obj_data, xr.DataArray):
+            return obj_data.values
+        elif isinstance(obj_data, xr.Dataset):
+            data_dict = {}
+            for var_name, var_data in obj_data.items():
+                data_dict[var_name] = var_data.values
+            return data_dict
+        else:
+            raise NotImplemented('Object type not implemented')
+    else:
+        return None
 # ----------------------------------------------------------------------------------------------------------------------

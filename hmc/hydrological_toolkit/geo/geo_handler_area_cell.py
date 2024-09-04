@@ -1,21 +1,18 @@
 # libraries
 import xarray as xr
 
-from hmc.hydrological_toolkit.geo.lib_geo_area_cell import compute_info_area_cell
+from hmc.hydrological_toolkit.geo.lib_geo_area_cell import compute_info
 from hmc.hydrological_toolkit.geo.geo_handler_base import GeoHandler
 
 
 class AreaCellHandler(GeoHandler):
 
     def __init__(self, da_cell_area: xr.DataArray, da_reference: xr.DataArray) -> None:
+        super().__init__(da_data=da_cell_area, da_reference=da_reference)
 
-        self.da_area_cell = da_cell_area
-        self.da_reference = da_reference
+    def organize_auxiliary(self) -> dict:
 
-    def organize_area_cell_info(self) -> dict:
+        area, pixels_n, dx, dy = compute_info(self.da_data)
+        obj_auxiliary = {'area': area, 'dx': dx, 'dy': dy, 'pixels': pixels_n}
 
-        area, pixels_n, res_meters_x, res_meters_y = compute_info_area_cell(self.da_area_cell)
-
-        obj_data = {'area': area, 'res_meters_x': res_meters_x, 'res_meters_y': res_meters_y, 'pixels_n': pixels_n}
-
-        return obj_data
+        return obj_auxiliary

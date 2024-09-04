@@ -4,10 +4,7 @@ from hmc.hydrological_toolkit.geo.lib_geo_utils import mask_data_by_reference
 
 
 # method to compute area cell information
-def compute_info_area_cell(da_area_cell):
-
-    #         dDxM = nint(sqrt(sum(a2dVarAreaCell, mask=a2dVarAreaCell.gt.0.0) / count(a2dVarAreaCell.gt.0.0)))
-    #         dDyM = nint(sqrt(sum(a2dVarAreaCell, mask=a2dVarAreaCell.gt.0.0) / count(a2dVarAreaCell.gt.0.0)))
+def compute_info(da_area_cell):
 
     da_masked = mask_data_by_reference(da_area_cell, da_area_cell, mask_method='!=', mask_value=-9999, mask_other=0)
     pixels_n = np.float(np.not_equal(da_masked, 0.0).sum().values)

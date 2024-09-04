@@ -79,6 +79,15 @@ static_data_grid = {
     "vars_list": None,
     "vars_mapping": None
   },
+  "uh": {
+    "file": "{domain_name}.uh.txt",
+    "mandatory": False,
+    "type": "raster",
+    "constants": "uh",
+    "no_data": -9999.0,
+    "vars_list": None,
+    "vars_mapping": None
+  },
   "area_cell": {
     "file": "{domain_name}.areacell.txt",
     "mandatory": True,
@@ -87,10 +96,19 @@ static_data_grid = {
     "no_data": -9999.0,
     "vars_list": None,
     "vars_mapping": None
-  }
+  },
+  "ct_wp": {
+    "file": "{domain_name}.ct_wp.txt",
+    "mandatory": False,
+    "type": "raster",
+    "constants": None,
+    "no_data": -9999.0,
+    "vars_list": None,
+    "vars_mapping": None
+  },
 }
 static_data_array = {
-  "vegetation_interception": {
+  "vegetation_ia": {
     "file": "valori_fo_noIa_AMC2.txt",
     "mandatory": True,
     "type": "array",

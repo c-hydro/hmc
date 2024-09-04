@@ -1,6 +1,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # libraries
 import os
+import warnings
 
 import pandas as pd
 import xarray as xr
@@ -43,8 +44,6 @@ class StaticDriver(IOHandler):
 
         file_collections_grid, file_collections_array = None, None
         for file_key, file_collections in static_collections.items():
-
-            print('file_key:', file_key)
 
             file_name = file_collections['file']
             file_mandatory = file_collections['mandatory']
@@ -96,7 +95,6 @@ class StaticDriver(IOHandler):
                 raise ValueError(f'Type {file_type} not supported.')
 
         return file_collections_grid, file_collections_array
-# ----------------------------------------------------------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------------------------------------------------------
