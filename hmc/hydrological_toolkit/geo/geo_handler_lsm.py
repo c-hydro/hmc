@@ -21,10 +21,10 @@ class LSMHandler(GeoHandler):
         self.constants = constants
 
         self.ct_wp_tag = 'ct_wp'
-        self.kb1_tag = 'kb1'
-        self.kc1_tag = 'kc1'
-        self.kb2_tag = 'kb2'
-        self.kc2_tag = 'kc2'
+        self.kb1_tag = 'kb_1'
+        self.kc1_tag = 'kc_1'
+        self.kb2_tag = 'kb_2'
+        self.kc2_tag = 'kc_2'
 
         super().__init__(da_data=da_reference, da_reference=da_reference)
 

@@ -10,6 +10,7 @@ from hmc.hydrological_toolkit.geo.geo_handler_area_cell import AreaCellHandler
 from hmc.hydrological_toolkit.geo.geo_handler_terrain import TerrainHandler
 from hmc.hydrological_toolkit.geo.geo_handler_cn import CNHandler
 
+from hmc.hydrological_toolkit.geo.geo_handler_volume import VolumeHandler
 from hmc.hydrological_toolkit.geo.geo_handler_lsm import LSMHandler
 from hmc.hydrological_toolkit.geo.geo_handler_horton import HortonHandler
 from hmc.hydrological_toolkit.geo.geo_handler_surface import SurfaceHandler
@@ -48,9 +49,13 @@ class GeoDriver(GeoHandler):
         dset_geo = driver_geo_terrain.organize_data(dset_geo)
 
         # method to organize, analyze and save curve number object(s)
-        driver_cn = CNHandler.select_data(self.static_data_grid,  self.ref_data_obj, var_name='curve_number')
+        driver_cn = CNHandler.select_data(self.static_data_grid,  da_reference=dset_geo['mask'], var_name='curve_number')
         dset_geo = driver_cn.organize_data(
             dset_geo, veg_ia_data=extract_values_from_obj(self.static_data_array['vegetation_ia']))
+
+        # method to organize, analyze and save volume object(s)
+        driver_volume = VolumeHandler(da_s=dset_geo['s'], da_reference=dset_geo['mask'], parameters=self.parameters)
+        dset_volume = driver_volume.organize_data()
 
         # method to organize, analyze and save land surface model object(s)
         driver_lsm = LSMHandler(da_ct=dset_geo['ct'], da_ct_wp=dset_geo['ct_wp'],  da_reference=self.ref_data_obj,
@@ -70,10 +75,10 @@ class GeoDriver(GeoHandler):
                                         parameters=self.parameters, constants=const_surface)
         dset_surface = driver_surface.organize_data(**auxiliary_area_cell)
 
-        return dset_geo, dset_lsm, dset_horton, dset_surface
+        return dset_geo, dset_volume, dset_lsm, dset_horton, dset_surface
 
     @staticmethod
-    def update_geo(dset_data: xr.Dataset, dset_expected: xr.Dataset) -> xr.Dataset:
+    def organize_geo(dset_data: xr.Dataset, dset_expected: xr.Dataset) -> xr.Dataset:
 
         vars_expected = list(dset_expected.variables)
         vars_dropped = []

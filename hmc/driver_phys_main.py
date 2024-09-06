@@ -13,19 +13,21 @@ from hmc.hydrological_toolkit.land_surface_model.phys_handler_lsm import LSMHand
 # class to handle driver physics
 class PhysDriver(object):
 
-    def __init__(self, dset_geo: xr.Dataset, dset_lsm: xr.Dataset, da_reference: xr.DataArray) -> None:
+    def __init__(self, dset_geo_generic: xr.Dataset, dset_data: xr.Dataset, da_reference: xr.DataArray) -> None:
 
-        self.dset_geo = dset_geo
-        self.dset_lsm = dset_lsm
+        self.dset_geo_generic = dset_geo_generic
+        self.dset_data = dset_data
         self.da_reference = da_reference
 
     # method to wrap physics routine(s)
-    def wrap_physics(self, dset_data_dynamic_src: xr.Dataset) -> xr.Dataset:
+    def wrap_physics_lsm(self, dset_geo_lsm: xr.Dataset,
+                         dset_geo_routing: xr.Dataset, dset_phys_volume: xr.Dataset) -> xr.Dataset:
 
         # class of land surface model
-        driver_phys_lsm = LSMHandler(dset_geo=self.dset_geo, da_reference=self.da_reference)
+        driver_phys_lsm = LSMHandler(dset_geo_generic=self.dset_geo_generic, dset_geo_routing=dset_geo_routing,
+                                     da_reference=self.da_reference)
         # execute lsm routine(s)
-        driver_phys_lsm.execute(dset_data_dynamic_src, dset_phys=self.dset_lsm)
+        driver_phys_lsm.execute(dset_data=self.dset_data, dset_phys=dset_phys_volume)
 
         return True
 # ----------------------------------------------------------------------------------------------------------------------

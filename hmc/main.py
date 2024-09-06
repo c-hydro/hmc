@@ -72,7 +72,14 @@ def hmc_main():
         folder_name=namelist_obj['settings']['path_data_static_grid'], file_name='{domain_name}.dem.txt',
         file_tags={'domain_name':  namelist_obj['parameters']['domain_name']},
         file_template=namelist_tags_obj.tags_string)
-    reference_static_obj = info_handler.get_file_info()
+    reference_static_terrain = info_handler.get_file_info()
+
+    info_handler = info_handler_base.InfoHandler.organize_file_obj(
+        folder_name=namelist_obj['settings']['path_data_static_grid'], file_name='{domain_name}.areacell.txt',
+        file_tags={'domain_name':  namelist_obj['parameters']['domain_name']},
+        file_template=namelist_tags_obj.tags_string)
+    # define reference static object
+    reference_static_cell_area = info_handler.get_file_info()
 
     # method to define info dynamic handler
     info_handler = info_handler_base.InfoHandler.organize_file_obj(
@@ -81,7 +88,15 @@ def hmc_main():
         file_time=namelist_obj['settings']['time_start'],
         file_tags={'domain_name': namelist_obj['parameters']['domain_name']},
         file_template={**namelist_tags_obj.tags_string, **namelist_tags_obj.tags_time})
+    # define reference dynamic object
     reference_dynamic_obj = info_handler.get_file_info()
+
+    # define reference time object
+    info_handler = info_handler_base.InfoHandler.organize_file_obj(
+        folder_name=namelist_obj['settings']['path_data_static_grid'], file_name='{domain_name}.areacell.txt',
+        file_tags={'domain_name':  namelist_obj['parameters']['domain_name']},
+        file_template=namelist_tags_obj.tags_string)
+    reference_time_obj = info_handler.get_time_info(time_period_sim=namelist_obj['settings']['time_period'])
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -106,11 +121,14 @@ def hmc_main():
     # driver physics geo
     driver_geo = GeoDriver(data_geo_grid, data_geo_array, reference_static_obj,
                            parameters=namelist_obj['parameters'])
-    # method to wrap physics routine(s)
-    dset_geo_generic, dset_geo_lsm = driver_geo.wrap_geo()
-    driver_geo.update_geo(dset_geo_lsm, vars_geo_lsm)
+    # method to wrap geo routine(
+    dset_geo_generic, dset_geo_volume, dset_geo_lsm, dset_geo_horton, dset_geo_surface = driver_geo.wrap_geo()
+    # method to organize geo object(s)
+    dset_geo_lsm = driver_geo.organize_geo(dset_geo_lsm, vars_geo_lsm)
+    dset_geo_horton = driver_geo.organize_geo(dset_geo_horton, vars_geo_horton)
 
-    driver_geo.initialize_geo(data_geo_grid, vars_geo_lsm)
+    # method to organize phys volume object(s)
+    dset_phys_volume = driver_geo.organize_geo(dset_geo_volume, vars_phys_volume)
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -129,8 +147,8 @@ def hmc_main():
                 time_step, namelist_data_dynamic_obj, namelist_tags_obj)
 
             # driver physics
-            driver_phys = PhysDriver(dset_data_static_obj, dset_lsm_static_obj, reference_static_obj)
-            dset_data_static_obj = driver_phys.wrap_physics(dset_data_dynamic_src_obj)
+            driver_phys = PhysDriver(dset_geo_generic, dset_data_dynamic_src_obj, reference_static_obj)
+            dset_data_static_obj = driver_phys.wrap_physics_lsm(dset_geo_lsm, dset_geo_routing, dset_phys_volume)
 
             time_handler.time_data_src_grid = time_handler.get_next_time(
                 time_handler.time_data_src_grid, time_handler.dt_data_src_grid)

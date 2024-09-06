@@ -28,6 +28,8 @@ class TerrainHandler(GeoHandler):
             raise ValueError('Dataset object is required to organize data')
 
         da_mask = compute_mask(self.da_data, no_data_value=-9999.0)
-        dset_data = self.add_data(da_data=da_mask, dset_data=dset_data, var_name=self.mask_tag)
+
+        dset_data = self.add_data(
+            da_data=da_mask, dset_data=dset_data, var_name=self.mask_tag, var_updating=True)
 
         return dset_data
