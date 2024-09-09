@@ -76,6 +76,12 @@ class IOHandler:
 
         return obj_data
 
+
+    def adjust_data(self, obj_data: xr.Dataset, type_data='netcdf_v1') -> xr.Dataset:
+        obj_data = self.filter_data(obj_data)
+        obj_data = self.map_data(obj_data)
+        return
+
     def filter_data(self, obj_data: xr.Dataset) -> xr.Dataset:
         vars_list = self.vars_list
         if vars_list is not None:

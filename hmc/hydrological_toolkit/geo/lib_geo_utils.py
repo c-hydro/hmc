@@ -1,3 +1,4 @@
+import warnings
 
 import numpy as np
 import xarray as xr
@@ -6,18 +7,30 @@ from copy import deepcopy
 
 def mask_data_boundaries(obj_data: (xr.DataArray, xr.Dataset), bounds_value: (float, int) = None) -> xr.DataArray:
 
-    if isinstance(obj_data, xr.DataArray):
-        obj_data.values[0, :] = bounds_value
-        obj_data.values[-1, :] = bounds_value
-        obj_data.values[:, 0] = bounds_value
-        obj_data.values[:, -1] = bounds_value
-    elif isinstance(obj_data, xr.Dataset):
-        for var_name, var_data in obj_data.items():
-            var_data.values[0, :] = bounds_value
-            var_data.values[-1, :] = bounds_value
-            var_data.values[:, 0] = bounds_value
-            var_data.values[:, -1] = bounds_value
-            obj_data[var_name] = var_data
+    if bounds_value is not None:
+
+        if isinstance(obj_data, xr.DataArray):
+            if np.any(np.isnan(obj_data.values)):
+                warnings.warn('Variable contains NaN values.')
+                bounds_value = np.nan
+            obj_data.values[0, :] = bounds_value
+            obj_data.values[-1, :] = bounds_value
+            obj_data.values[:, 0] = bounds_value
+            obj_data.values[:, -1] = bounds_value
+        elif isinstance(obj_data, xr.Dataset):
+            for var_name, var_data in obj_data.items():
+
+                if np.any(np.isnan(var_data.values)):
+                    warnings.warn(f'Variable {var_name} contains NaN values.')
+                    bounds_value = np.nan
+
+                var_data.values[0, :] = bounds_value
+                var_data.values[-1, :] = bounds_value
+                var_data.values[:, 0] = bounds_value
+                var_data.values[:, -1] = bounds_value
+                obj_data[var_name] = var_data
+    else:
+        warnings.warn('Bounds value is None.')
     return obj_data
 
 

@@ -10,6 +10,7 @@ from hmc.hydrological_toolkit.geo.geo_handler_area_cell import AreaCellHandler
 from hmc.hydrological_toolkit.geo.geo_handler_terrain import TerrainHandler
 from hmc.hydrological_toolkit.geo.geo_handler_cn import CNHandler
 
+from hmc.hydrological_toolkit.geo.geo_handler_parameters import ParamsHandler
 from hmc.hydrological_toolkit.geo.geo_handler_volume import VolumeHandler
 from hmc.hydrological_toolkit.geo.geo_handler_lsm import LSMHandler
 from hmc.hydrological_toolkit.geo.geo_handler_horton import HortonHandler
@@ -53,6 +54,12 @@ class GeoDriver(GeoHandler):
         dset_geo = driver_cn.organize_data(
             dset_geo, veg_ia_data=extract_values_from_obj(self.static_data_array['vegetation_ia']))
 
+        # method to organize, analyze and save parameters object(s)
+        driver_params = ParamsHandler(da_ct=dset_geo['ct'], da_cf=dset_geo['cf'],
+                                      da_uc=dset_geo['uc'], da_uh=dset_geo['uh'], da_reference=self.ref_data_obj,
+                                      parameters=self.parameters)
+        dset_params = driver_params.organize_data()
+
         # method to organize, analyze and save volume object(s)
         driver_volume = VolumeHandler(da_s=dset_geo['s'], da_reference=dset_geo['mask'], parameters=self.parameters)
         dset_volume = driver_volume.organize_data()
@@ -75,7 +82,7 @@ class GeoDriver(GeoHandler):
                                         parameters=self.parameters, constants=const_surface)
         dset_surface = driver_surface.organize_data(**auxiliary_area_cell)
 
-        return dset_geo, dset_volume, dset_lsm, dset_horton, dset_surface
+        return dset_geo, dset_params, dset_volume, dset_lsm, dset_horton, dset_surface
 
     @staticmethod
     def organize_geo(dset_data: xr.Dataset, dset_expected: xr.Dataset) -> xr.Dataset:

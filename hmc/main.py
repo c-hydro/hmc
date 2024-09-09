@@ -101,7 +101,7 @@ def hmc_main():
 
     # ------------------------------------------------------------------------------------------------------------------
     # driver variables
-    driver_variables = VariablesDriver(parameters=namelist_obj['parameters'], da_reference=reference_static_obj)
+    driver_variables = VariablesDriver(parameters=namelist_obj['parameters'], da_reference=reference_static_terrain)
     vars_geo_generic, vars_geo_routing, vars_geo_horton, vars_geo_wt, vars_geo_lsm = driver_variables.allocate_variables_geo()
     vars_data_src = driver_variables.allocate_variables_data()
     vars_phys_lsm, vars_phys_volume, vars_phys_et, vars_phys_routing = driver_variables.allocate_variables_phys()
@@ -112,17 +112,17 @@ def hmc_main():
     driver_data_static = StaticDriver(
         obj_namelist=namelist_obj,
         obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
-        obj_reference=reference_static_obj)
+        obj_reference=reference_static_terrain)
     # method to organize static data
     data_geo_grid, data_geo_array = driver_data_static.organize_data(namelist_data_static_obj, namelist_tags_obj)
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
     # driver physics geo
-    driver_geo = GeoDriver(data_geo_grid, data_geo_array, reference_static_obj,
+    driver_geo = GeoDriver(data_geo_grid, data_geo_array, reference_static_terrain,
                            parameters=namelist_obj['parameters'])
     # method to wrap geo routine(
-    dset_geo_generic, dset_geo_volume, dset_geo_lsm, dset_geo_horton, dset_geo_surface = driver_geo.wrap_geo()
+    dset_geo_generic, dset_geo_params, dset_geo_volume, dset_geo_lsm, dset_geo_horton, dset_geo_surface = driver_geo.wrap_geo()
     # method to organize geo object(s)
     dset_geo_lsm = driver_geo.organize_geo(dset_geo_lsm, vars_geo_lsm)
     dset_geo_horton = driver_geo.organize_geo(dset_geo_horton, vars_geo_horton)
@@ -147,8 +147,10 @@ def hmc_main():
                 time_step, namelist_data_dynamic_obj, namelist_tags_obj)
 
             # driver physics
-            driver_phys = PhysDriver(dset_geo_generic, dset_data_dynamic_src_obj, reference_static_obj)
-            dset_data_static_obj = driver_phys.wrap_physics_lsm(dset_geo_lsm, dset_geo_routing, dset_phys_volume)
+            driver_phys = PhysDriver(dset_geo_generic, dset_geo_params,
+                                     dset_data_dynamic_src_obj, reference_static_terrain)
+            dset_phys_lsm = driver_phys.wrap_physics_lsm(
+                dset_geo_lsm, dset_geo_routing=None, dset_phys_volume=dset_phys_volume)
 
             time_handler.time_data_src_grid = time_handler.get_next_time(
                 time_handler.time_data_src_grid, time_handler.dt_data_src_grid)

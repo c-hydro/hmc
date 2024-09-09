@@ -62,7 +62,12 @@ class DynamicDriver(IOHandler):
             file_vars_list=file_vars_list, file_vars_mapping=file_vars_mapping
         )
 
+        # get data information
         file_dset = io_dynamic_src_grid_handler.get_file_data()
+        # adjust data information (according to the specific data type)
+        file_dset = io_dynamic_src_grid_handler.adjust_file_data(file_dset)
+
+        # mask data by reference
         file_dset = mask_data_boundaries(file_dset, bounds_value=file_no_data)
 
         return file_dset

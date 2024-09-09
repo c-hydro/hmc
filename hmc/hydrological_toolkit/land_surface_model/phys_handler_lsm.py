@@ -10,11 +10,12 @@ from hmc.hydrological_toolkit.land_surface_model.phys_apps_lsm import (
 # class to handle land surface model
 class LSMHandler:
 
-    def __init__(self, dset_geo_generic: xr.Dataset,
+    def __init__(self, dset_geo_generic: xr.Dataset, dset_geo_parameters: xr.Dataset,
                  dset_geo_lsm: xr.Dataset, dset_geo_routing: xr.Dataset,
                  da_reference: xr.DataArray) -> None:
 
         self.dset_geo_generic = dset_geo_generic
+        self.dset_geo_parameters = dset_geo_parameters
         self.dset_geo_lsm = dset_geo_lsm
         self.dset_geo_routing = dset_geo_routing
 
@@ -39,17 +40,17 @@ class LSMHandler:
         var_kb_1 = get_variable_data(self.dset_geo_lsm, var_name='kb_1', var_mandatory=True)
         var_kc_1 = get_variable_data(self.dset_geo_lsm, var_name='kc_1', var_mandatory=True)
         # get variables routing
-        var_ct = get_variable_data(self.dset_geo_routing, var_name='ct', var_mandatory=True)
+        var_ct = get_variable_data(self.dset_geo_parameters, var_name='ct', var_mandatory=True)
 
         # get variables physics
         var_vtot = get_variable_data(dset_phys_volume, var_name='vtot', var_mandatory=True)
 
         # get variables data
-        var_tair = get_variable_data(dset_data, var_name='tair', var_mandatory=True)
+        var_tair = get_variable_data(dset_data, var_name='airt', var_mandatory=True)
         var_rh = get_variable_data(dset_data, var_name='rh', var_mandatory=True)
         var_inc_rad = get_variable_data(dset_data, var_name='inc_rad', var_mandatory=True)
         var_wind = get_variable_data(dset_data, var_name='wind', var_mandatory=True)
-        var_pair = get_variable_data(dset_data, var_name='pair', var_mandatory=True)
+        var_pair = get_variable_data(dset_data, var_name='pair', var_mandatory=False)
 
         # adapt variables
         var_tair = var_tair + self.t_ref

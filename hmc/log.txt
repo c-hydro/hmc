@@ -1,4 +1,4 @@
-2024-09-06 16:01:42,971 hmc          INFO      ============================================================================    log_handler_base.py :[56     - info                ()] 
-2024-09-06 16:01:42,971 hmc          INFO      ==> HMC (Version: 3.5.0 Release_Date: 20240808)                                 log_handler_base.py :[56     - info                ()] 
-2024-09-06 16:01:42,971 hmc          INFO      ==> START ...                                                                   log_handler_base.py :[56     - info                ()] 
-2024-09-06 16:01:42,971 hmc          INFO                                                                                      log_handler_base.py :[56     - info                ()] 
+2024-09-09 14:51:51,671 hmc          INFO      ============================================================================    log_handler_base.py :[56     - info                ()] 
+2024-09-09 14:51:51,672 hmc          INFO      ==> HMC (Version: 3.5.0 Release_Date: 20240808)                                 log_handler_base.py :[56     - info                ()] 
+2024-09-09 14:51:51,672 hmc          INFO      ==> START ...                                                                   log_handler_base.py :[56     - info                ()] 
+2024-09-09 14:51:51,672 hmc          INFO                                                                                      log_handler_base.py :[56     - info                ()] 

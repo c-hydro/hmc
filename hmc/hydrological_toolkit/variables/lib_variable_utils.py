@@ -40,7 +40,9 @@ def create_variable(rows, cols, time=None, var_default_value=-9999, var_dtype='f
 
 # ----------------------------------------------------------------------------------------------------------------------
 # method to get variable data
-def get_variable_data(dset_data: xr.Dataset, var_name: str, var_mandatory: bool = True) -> numpy.ndarray:
+def get_variable_data(dset_data: xr.Dataset,
+                      var_name: str, var_mandatory: bool = True,
+                      var_type: str = 'float32', var_no_data: (float, int) = -9999.0) -> numpy.ndarray:
 
     if var_name in list(dset_data.variables):
         var_data = dset_data[var_name].values
@@ -48,7 +50,10 @@ def get_variable_data(dset_data: xr.Dataset, var_name: str, var_mandatory: bool 
         if var_mandatory:
             raise ValueError('Variable "' + var_name + '" not found in dset_data')
         else:
-            var_data = dset_data.shape
+            var_dims = dset_data.dims
+            var_cols, var_rows = var_dims['longitude'], var_dims['latitude']
+            var_data = np.zeros((var_rows, var_cols), dtype=var_type)
+            var_data[:, :] = var_no_data
 
     return var_data
 # ----------------------------------------------------------------------------------------------------------------------

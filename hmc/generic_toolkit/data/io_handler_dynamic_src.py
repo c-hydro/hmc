@@ -1,6 +1,8 @@
 # libraries
 import os
+import numpy as np
 import pandas as pd
+import xarray as xr
 from typing import Optional
 
 from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date, substitute_string_by_tags
@@ -27,11 +29,13 @@ class DynamicSrcHandler(ZipWrapper, IOWrapper):
 
     type_class = 'io_dynamic_src'
 
-    def __init__(self, folder_name: str, file_name: str,
+    def __init__(self, folder_name: str, file_name: str, file_version: str = 'hmc_netcdf_v1',
                  vars_list: list = None, vars_mapping: dict = None) -> None:
 
         self.folder_name = folder_name
         self.file_name = file_name
+        self.file_version = file_version
+
         self.vars_list = vars_list
         self.vars_mapping = vars_mapping
 
@@ -86,5 +90,43 @@ class DynamicSrcHandler(ZipWrapper, IOWrapper):
         file_data = self.map_data(file_data)
 
         return file_data
+
+    def adjust_file_data(self, file_data_in: xr.Dataset) -> xr.Dataset:
+
+        if self.file_version == 'hmc_netcdf_v1':
+
+            file_vars = list(file_data_in.variables)
+
+            file_dict = {}
+            file_geo_x, file_geo_y, file_time = None, None, None
+            for var_name in file_vars:
+                if var_name == 'longitude':
+                    var_data = file_data_in[var_name].values
+                    file_geo_x = var_data[0, :]
+                elif var_name == 'latitude':
+                    var_data = file_data_in[var_name].values
+                    file_geo_y = var_data[:, 0]
+                elif var_name == 'time':
+                    file_time = pd.Timestamp(file_data_in[var_name].values)
+                else:
+                    var_data = file_data_in[var_name].values
+                    var_data = np.rot90(np.transpose(var_data))
+
+                    file_dict[var_name] = var_data
+
+            if file_geo_x is None or file_geo_y is None:
+                raise ValueError('Longitude and latitude not found in file data.')
+            file_data_out = xr.Dataset(coords={'longitude': file_geo_x, 'latitude': file_geo_y})
+            for var_name, var_data in file_dict.items():
+
+                da_data = xr.DataArray(var_data, coords=[file_geo_y, file_geo_x], dims=['latitude', 'longitude'])
+                file_data_out[var_name] = da_data
+
+            file_data_out.attrs = {'time': file_time}
+
+        else:
+            raise NotImplementedError(f'File format {self.file_format} not implemented.')
+
+        return file_data_out
 
 
