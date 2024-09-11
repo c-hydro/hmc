@@ -61,7 +61,8 @@ class GeoDriver(GeoHandler):
         dset_params = driver_params.organize_data()
 
         # method to organize, analyze and save volume object(s)
-        driver_volume = VolumeHandler(da_s=dset_geo['s'], da_reference=dset_geo['mask'], parameters=self.parameters)
+        driver_volume = VolumeHandler(da_s=dset_geo['s'], da_terrain=dset_geo['terrain'],
+                                      da_reference=dset_geo['mask'], parameters=self.parameters)
         dset_volume = driver_volume.organize_data()
 
         # method to organize, analyze and save land surface model object(s)

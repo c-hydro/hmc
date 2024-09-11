@@ -104,7 +104,7 @@ def hmc_main():
     driver_variables = VariablesDriver(parameters=namelist_obj['parameters'], da_reference=reference_static_terrain)
     vars_geo_generic, vars_geo_routing, vars_geo_horton, vars_geo_wt, vars_geo_lsm = driver_variables.allocate_variables_geo()
     vars_data_src = driver_variables.allocate_variables_data()
-    vars_phys_lsm, vars_phys_volume, vars_phys_et, vars_phys_routing = driver_variables.allocate_variables_phys()
+    dset_phys_lsm, dset_phys_volume, dset_phys_et, dset_phys_routing = driver_variables.allocate_variables_phys()
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -128,7 +128,7 @@ def hmc_main():
     dset_geo_horton = driver_geo.organize_geo(dset_geo_horton, vars_geo_horton)
 
     # method to organize phys volume object(s)
-    dset_phys_volume = driver_geo.organize_geo(dset_geo_volume, vars_phys_volume)
+    dset_phys_volume = driver_geo.organize_geo(dset_geo_volume, dset_phys_volume)
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------

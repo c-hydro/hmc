@@ -5,7 +5,6 @@ import pandas as pd
 import xarray as xr
 
 from hmc.hydrological_toolkit.land_surface_model.phys_handler_lsm import LSMHandler
-
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -23,8 +22,9 @@ class PhysDriver(object):
         self.da_reference = da_reference
 
     # method to wrap physics routine(s)
-    def wrap_physics_lsm(self, dset_geo_lsm: xr.Dataset,
-                         dset_geo_routing: xr.Dataset, dset_phys_volume: xr.Dataset) -> xr.Dataset:
+    def wrap_physics_lsm(self,
+                         dset_geo_lsm: xr.Dataset, dset_geo_routing: xr.Dataset,
+                         dset_phys_lsm: xr.Dataset, dset_phys_volume: xr.Dataset) -> xr.Dataset:
 
         # class of land surface model
         driver_phys_lsm = LSMHandler(dset_geo_generic=self.dset_geo_generic,
@@ -32,7 +32,8 @@ class PhysDriver(object):
                                      dset_geo_lsm=dset_geo_lsm, dset_geo_routing=dset_geo_routing,
                                      da_reference=self.da_reference)
         # execute lsm routine(s)
-        driver_phys_lsm.execute(dset_data=self.dset_data, dset_phys_volume=dset_phys_volume)
+        driver_phys_lsm.execute(dset_data=self.dset_data,
+                                dset_phys_lsm=dset_phys_lsm, dset_phys_volume=dset_phys_volume)
 
         return True
 # ----------------------------------------------------------------------------------------------------------------------

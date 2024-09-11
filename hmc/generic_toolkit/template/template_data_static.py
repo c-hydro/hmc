@@ -1,120 +1,144 @@
 static_data_grid = {
   "terrain": {
-    "file": "{domain_name}.dem.txt",
-    "mandatory": True,
-    "type": "raster",
-    "constants": None,
-    "no_data": -9999.0
+    "file_name": "{domain_name}.dem.txt",
+    "file_mandatory": True,
+    "file_type": "raster",
+    "vars_constants": None,
+    "vars_no_data": -9999.0,
+    "vars_list": None,
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "flow_directions": {
-    "file": "{domain_name}.pnt.txt",
-    "mandatory": True,
-    "type": "raster",
-    "constants": None,
-    "no_data": -9999
+    "file_name": "{domain_name}.pnt.txt",
+    "file_mandatory": True,
+    "file_type": "raster",
+    "vars_constants": None,
+    "vars_no_data": -9999.0,
+    "vars_list": None,
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "channel_network": {
-    "file": "{domain_name}.choice.txt",
-    "mandatory": True,
-    "type": "raster",
-    "constants": None,
-    "no_data": -1
+    "file_name": "{domain_name}.choice.txt",
+    "file_mandatory": True,
+    "file_type": "raster",
+    "vars_constants": None,
+    "vars_no_data": -1,
+    "vars_list": None,
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "curve_number": {
-    "file": "{domain_name}.cn.txt",
-    "mandatory": False,
-    "type": "raster",
-    "constants": "cn",
-    "no_data": -9999.0
+    "file_name": "{domain_name}.cn.txt",
+    "file_mandatory": False,
+    "file_type": "raster",
+    "vars_constants": "cn",
+    "vars_no_data": -9999.0,
+    "vars_list": None,
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "mask": {
-    "file": "{domain_name}.mask.txt",
-    "mandatory": True,
-    "type": "raster",
-    "constants": None,
-    "no_data": -9999.0
+    "file_name": "{domain_name}.mask.txt",
+    "file_mandatory": True,
+    "file_type": "raster",
+    "vars_constants": None,
+    "vars_no_data": -9999.0,
+    "vars_list": None,
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "alpha": {
-    "file": "{domain_name}.alpha.txt",
-    "mandatory": True,
-    "type": "raster",
-    "constants": None,
-    "no_data": -9999.0,
+    "file_name": "{domain_name}.alpha.txt",
+    "file_mandatory": True,
+    "file_type": "raster",
+    "vars_constants": None,
+    "vars_no_data": -9999.0,
     "vars_list": None,
-    "vars_mapping": None
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "beta": {
-    "file": "{domain_name}.beta.txt",
-    "mandatory": True,
-    "type": "raster",
-    "constants": None,
-    "no_data": -9999.0,
+    "file_name": "{domain_name}.beta.txt",
+    "file_mandatory": True,
+    "file_type": "raster",
+    "vars_constants": None,
+    "vars_no_data": -9999.0,
     "vars_list": None,
-    "vars_mapping": None
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "ct": {
-    "file": "{domain_name}.ct.txt",
-    "mandatory": False,
-    "type": "raster",
-    "constants": "ct",
-    "no_data": -9999.0,
+    "file_name": "{domain_name}.ct.txt",
+    "file_mandatory": False,
+    "file_type": "raster",
+    "vars_constants": "ct",
+    "vars_no_data": -9999.0,
     "vars_list": None,
-    "vars_mapping": None
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "cf": {
-    "file": "{domain_name}.cf.txt",
-    "mandatory": False,
-    "type": "raster",
-    "constants": "cf",
-    "no_data": -9999.0,
+    "file_name": "{domain_name}.cf.txt",
+    "file_mandatory": False,
+    "file_type": "raster",
+    "vars_constants": "cf",
+    "vars_no_data": -9999.0,
     "vars_list": None,
-    "vars_mapping": None
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "uc": {
-    "file": "{domain_name}.uc.txt",
-    "mandatory": False,
-    "type": "raster",
-    "constants": "uc",
-    "no_data": -9999.0,
+    "file_name": "{domain_name}.uc.txt",
+    "file_mandatory": False,
+    "file_type": "raster",
+    "vars_constants": "uc",
+    "vars_no_data": -9999.0,
     "vars_list": None,
-    "vars_mapping": None
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "uh": {
-    "file": "{domain_name}.uh.txt",
-    "mandatory": False,
-    "type": "raster",
-    "constants": "uh",
-    "no_data": -9999.0,
+    "file_name": "{domain_name}.uh.txt",
+    "file_mandatory": False,
+    "file_type": "raster",
+    "vars_constants": "uh",
+    "vars_no_data": -9999.0,
     "vars_list": None,
-    "vars_mapping": None
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "area_cell": {
-    "file": "{domain_name}.areacell.txt",
-    "mandatory": True,
-    "type": "raster",
-    "constants": None,
-    "no_data": -9999.0,
+    "file_name": "{domain_name}.areacell.txt",
+    "file_mandatory": True,
+    "file_type": "raster",
+    "vars_constants": None,
+    "vars_no_data": -9999.0,
     "vars_list": None,
-    "vars_mapping": None
+    "vars_tags": None,
+    "vars_mandatory": None
   },
   "ct_wp": {
-    "file": "{domain_name}.ct_wp.txt",
-    "mandatory": False,
-    "type": "raster",
-    "constants": None,
-    "no_data": -9999.0,
+    "file_name": "{domain_name}.ct_wp.txt",
+    "file_mandatory": False,
+    "file_type": "raster",
+    "vars_constants": None,
+    "vars_no_data": -9999.0,
     "vars_list": None,
-    "vars_mapping": None
+    "vars_tags": None,
+    "vars_mandatory": None
   },
 }
 static_data_array = {
   "vegetation_ia": {
-    "file": "valori_fo_noIa_AMC2.txt",
-    "mandatory": True,
-    "type": "array",
-    "constants": None,
-    "no_data": None,
+    "file_name": "valori_fo_noIa_AMC2.txt",
+    "file_mandatory": True,
+    "file_type": "array",
+    "vars_constants": None,
+    "vars_no_data": None,
     "vars_list": None,
-    "vars_mapping": None
+    "vars_tags": None,
+    "vars_mandatory": None
   }
 }

@@ -3,7 +3,6 @@
 import os
 import warnings
 
-import pandas as pd
 import xarray as xr
 
 from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date, substitute_string_by_tags
@@ -45,11 +44,11 @@ class StaticDriver(IOHandler):
         file_collections_grid, file_collections_array = None, None
         for file_key, file_collections in static_collections.items():
 
-            file_name = file_collections['file']
-            file_mandatory = file_collections['mandatory']
-            file_type = file_collections['type']
-            file_default = file_collections['constants']
-            file_no_data = file_collections['no_data']
+            file_name = file_collections['file_name']
+            file_mandatory = file_collections['file_mandatory']
+            file_type = file_collections['file_type']
+            vars_constants = file_collections['vars_constants']
+            vars_no_data = file_collections['vars_no_data']
 
             folder_name = substitute_string_by_tags(folder_name, string_tags)
             file_name = substitute_string_by_tags(file_name, string_tags)
@@ -64,20 +63,20 @@ class StaticDriver(IOHandler):
             if file_type == 'raster':
 
                 if obj_data is None:
-                    obj_data = initialize_data_by_reference(da_reference=self.obj_reference, default_value=file_no_data)
+                    obj_data = initialize_data_by_reference(da_reference=self.obj_reference, default_value=vars_no_data)
 
-                if file_default is not None:
-                    if file_default in list(self.obj_namelist_parameters.keys()):
-                        file_default_value = self.obj_namelist_parameters[file_default]
+                if vars_constants is not None:
+                    if vars_constants in list(self.obj_namelist_parameters.keys()):
+                        var_constant_value = self.obj_namelist_parameters[vars_constants]
                         grid_da = initialize_data_by_constant(
                             da_other=obj_data, da_reference=self.obj_reference,
                             condition_method='<', condition_value=0,
-                            constant_value=file_default_value)
+                            constant_value=var_constant_value)
 
                 obj_data = mask_data_by_reference(
-                    obj_data, self.obj_reference, mask_method='==', mask_value=file_no_data, mask_other=obj_data)
+                    obj_data, self.obj_reference, mask_method='==', mask_value=vars_no_data, mask_other=obj_data)
 
-                obj_data = mask_data_boundaries(obj_data, bounds_value=file_no_data)
+                obj_data = mask_data_boundaries(obj_data, bounds_value=vars_no_data)
 
                 if file_collections_grid is None:
                     file_collections_grid = xr.Dataset()
@@ -95,6 +94,7 @@ class StaticDriver(IOHandler):
                 raise ValueError(f'Type {file_type} not supported.')
 
         return file_collections_grid, file_collections_array
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------------------------------------------------------

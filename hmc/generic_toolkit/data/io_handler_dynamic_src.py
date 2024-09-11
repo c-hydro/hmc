@@ -6,6 +6,7 @@ import xarray as xr
 from typing import Optional
 
 from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date, substitute_string_by_tags
+from hmc.generic_toolkit.data.lib_io_variables import fill_var_generic, fill_var_air_pressure
 from hmc.generic_toolkit.data.io_handler_base import IOHandler
 from hmc.generic_toolkit.data.zip_handler_base import ZipHandler
 
@@ -28,6 +29,8 @@ class IOWrapper(IOHandler):
 class DynamicSrcHandler(ZipWrapper, IOWrapper):
 
     type_class = 'io_dynamic_src'
+    type_fx_fill = {'tair': 'fill_var_generic',
+                    'rh': 'fill_var_generic', 'air_p': 'fill_var_air_pressure'}
 
     def __init__(self, folder_name: str, file_name: str, file_version: str = 'hmc_netcdf_v1',
                  vars_list: list = None, vars_mapping: dict = None) -> None:
@@ -54,16 +57,18 @@ class DynamicSrcHandler(ZipWrapper, IOWrapper):
                            file_time: pd.Timestamp = None,
                            file_tags: dict = None,
                            file_mandatory: bool = True, file_template: dict = None,
-                           file_vars_list: dict = None, file_vars_mapping: dict = None):
+                           vars_list: dict = None, vars_tags: dict = None):
 
         if file_tags is None:
             file_tags = {}
         if file_template is None:
             file_template = {}
-        if file_vars_list is None:
-            file_vars_list = {}
-        if file_vars_mapping is None:
-            file_vars_mapping = {}
+        if vars_list is None:
+            vars_list = {}
+        if vars_tags is None:
+            vars_tags = {}
+
+        vars_mapping = dict(zip(vars_list, vars_tags))
 
         folder_name = substitute_string_by_tags(folder_name, file_tags)
         folder_name = substitute_string_by_date(folder_name, file_time, file_template)
@@ -74,7 +79,7 @@ class DynamicSrcHandler(ZipWrapper, IOWrapper):
             if not os.path.exists(os.path.join(folder_name, file_name)):
                 raise FileNotFoundError(f'File {file_name} does not exist in path {folder_name}.')
 
-        return cls(folder_name, file_name, vars_list=file_vars_list, vars_mapping=file_vars_mapping)
+        return cls(folder_name, file_name, vars_list=vars_list, vars_mapping=vars_mapping)
 
     def get_file_data(self):
 
@@ -129,4 +134,15 @@ class DynamicSrcHandler(ZipWrapper, IOWrapper):
 
         return file_data_out
 
+    def fill_file_data(self, file_data: xr.Dataset, vars_tags: list, vars_mandatory: list) -> xr.Dataset:
 
+        file_vars = list(file_data.variables)
+
+        for var_name in file_vars:
+            var_data = file_data[var_name].values
+            if np.all(var_data == -9999.0):
+                var_fx_fill = self.type_fx_fill.get(var_name)
+                file_data[var_name].values = var_fx_fill(var_data, file_template, file_time)
+            self.fx_data = self.type_data_grid.get(self.file_format, self.error_data)
+
+        return file_data

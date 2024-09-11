@@ -17,8 +17,14 @@ def compute_volume_total(terrain: np.ndarray = None, s: np.ndarray = None, cpi: 
     if s is None:
         raise ValueError('S is not defined')
 
-    volume_tot = cpi / 2 * s + cpi / 2 * s * (np.nanmax(terrain) - terrain) / np.nanmax(terrain)
-    volume_tot[terrain < 0] = 0
-    volume_tot[s < 0] = 0
+    max_terrain = np.nanmax(terrain)
 
-    return volume_tot
+    var_volume_vtot = np.zeros_like(terrain)
+    var_volume_vtot = np.where(
+        terrain >= 0,
+        cpi / 2 * s + cpi / 2 * s * (max_terrain - terrain) / max_terrain, var_volume_vtot)
+
+    var_volume_vtot[terrain < 0] = 0
+    var_volume_vtot[s < 0] = 0
+
+    return var_volume_vtot
