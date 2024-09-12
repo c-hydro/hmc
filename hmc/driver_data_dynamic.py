@@ -11,6 +11,8 @@ from hmc.generic_toolkit.data.io_handler_dynamic_src import DynamicSrcHandler
 from hmc.hydrological_toolkit.geo.lib_geo_utils import (
     mask_data_by_reference, mask_data_boundaries,
     initialize_data_by_constant, initialize_data_by_default, initialize_data_by_reference)
+
+from hmc.hydrological_toolkit.variables.lib_variable_attrs import fill_list_length
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -54,6 +56,9 @@ class DynamicDriver(IOHandler):
         vars_tags = dynamic_collections['vars_tags']
         vars_mandatory = dynamic_collections['vars_mandatory']
 
+        vars_constant, vars_no_data, vars_list, vars_tags, vars_mandatory = fill_list_length(
+            vars_constant, vars_no_data, vars_list, vars_tags, vars_mandatory, no_data=-9999.0)
+
         folder_name = substitute_string_by_tags(folder_name, string_tags)
         folder_name = substitute_string_by_date(folder_name, data_time, dynamic_tags)
         file_name = substitute_string_by_tags(file_name, string_tags)
@@ -71,10 +76,12 @@ class DynamicDriver(IOHandler):
         # adjust data information (according to the specific data type)
         file_dset = io_dynamic_src_grid_handler.adjust_file_data(file_dset)
         # fill data information
-        file_dset = io_dynamic_src_grid_handler.fill_file_data(file_dset, vars_mandatory=vars_mandatory)
+        file_dset = io_dynamic_src_grid_handler.fill_file_data(
+            file_dset, ref_data=self.obj_reference,
+            vars_tags=vars_tags, vars_mandatory=vars_mandatory, vars_no_data=vars_no_data)
 
         # mask data by reference
-        file_dset = mask_data_boundaries(file_dset, bounds_value=file_no_data)
+        file_dset = mask_data_boundaries(file_dset, bounds_value=vars_no_data)
 
         return file_dset
 

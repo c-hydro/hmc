@@ -5,7 +5,7 @@ import xarray as xr
 from copy import deepcopy
 
 
-def mask_data_boundaries(obj_data: (xr.DataArray, xr.Dataset), bounds_value: (float, int) = None) -> xr.DataArray:
+def mask_data_boundaries(obj_data: (xr.DataArray, xr.Dataset), bounds_value: (float, int, list) = None) -> xr.DataArray:
 
     if bounds_value is not None:
 
@@ -18,16 +18,18 @@ def mask_data_boundaries(obj_data: (xr.DataArray, xr.Dataset), bounds_value: (fl
             obj_data.values[:, 0] = bounds_value
             obj_data.values[:, -1] = bounds_value
         elif isinstance(obj_data, xr.Dataset):
-            for var_name, var_data in obj_data.items():
+            for var_id, (var_name, var_data) in enumerate(obj_data.items()):
+
+                bound_value = bounds_value[var_id]
 
                 if np.any(np.isnan(var_data.values)):
                     warnings.warn(f'Variable {var_name} contains NaN values.')
-                    bounds_value = np.nan
+                    bound_value = np.nan
 
-                var_data.values[0, :] = bounds_value
-                var_data.values[-1, :] = bounds_value
-                var_data.values[:, 0] = bounds_value
-                var_data.values[:, -1] = bounds_value
+                var_data.values[0, :] = bound_value
+                var_data.values[-1, :] = bound_value
+                var_data.values[:, 0] = bound_value
+                var_data.values[:, -1] = bound_value
                 obj_data[var_name] = var_data
     else:
         warnings.warn('Bounds value is None.')

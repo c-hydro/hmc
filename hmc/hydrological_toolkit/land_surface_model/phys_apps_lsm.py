@@ -75,59 +75,37 @@ def compute_thermal_inertia(sm: np.ndarray, mask: np.ndarray,
     return var_pit
 
 
+# method to compute richardson number
 def compute_richardson(wind: np.ndarray, ta_k: np.ndarray, pa: np.ndarray,
                        lst: np.ndarray, mask: np.ndarray,
                        rd: float, cp: float, g: float, z_ref: float) -> np.ndarray:
+
+    var_tp = np.zeros_like(mask)
+    var_tp = np.where(mask == 0.0, 0.0, var_tp)
+    var_tp = np.where(mask == 1.0, ta_k * (1000.0 / pa) ** (rd / cp), var_tp)
+    var_tp = np.where((mask == 1.0) & (wind > 0.0), ta_k * (1000.0 / pa) ** (rd / cp), var_tp)
+
+    var_tp0 = np.zeros_like(mask)
+    var_tp0 = np.where(mask == 0.0, 0.0, var_tp0)
+    var_tp0 = np.where(mask == 1.0, lst * (1000.0 / pa) ** (rd / cp), var_tp0)
+    var_tp0 = np.where((mask == 1.0) & (wind > 0.0), lst * (1000.0 / pa) ** (rd / cp), var_tp0)
+
+    var_rb = np.zeros_like(mask)
+    var_rb = np.where(mask == 0.0, 0.0, var_rb)
+    var_rb = np.where(mask == 1.0, (g / var_tp) * (var_tp - var_tp0) * z_ref / (0.1 ** 2), var_rb)
+    var_rb = np.where((mask == 1.0) & (wind > 0.0), (g / var_tp) * (var_tp - var_tp0) * z_ref / (wind ** 2), var_rb)
 
     plt.figure(); plt.imshow(wind); plt.colorbar();
     plt.figure(); plt.imshow(ta_k); plt.colorbar();
     plt.figure(); plt.imshow(pa); plt.colorbar();
     plt.figure(); plt.imshow(lst); plt.colorbar();
+    plt.figure(); plt.imshow(var_tp); plt.colorbar();
+    plt.figure(); plt.imshow(var_tp0); plt.colorbar();
+    plt.figure(); plt.imshow(var_rb); plt.colorbar();
+
     plt.show()
 
-
-    """
-             call debug_2dVar(dble(a2dVarWind), iRows, iCols, 1, 2)
-     call debug_2dVar(dble(a2dVarTaK), iRows, iCols, 2, 2)
-     call debug_2dVar(dble(a2dVarPa), iRows, iCols, 3, 2)
-     call debug_2dVar(dble(a2dVarLST), iRows, iCols, 4, 2)     
-     call debug_2dVar(dble(a2dVarTp), iRows, iCols, 5, 2)
-     call debug_2dVar(dble(a2dVarTp0), iRows, iCols, 6, 2)
-     call debug_2dVar(dble(a2dVarRb), iRows, iCols, 7, 2)
-     """
-
-    """
-            !------------------------------------------------------------------------------------------
-        ! Variable(s) initialization
-        a2dVarTp = 0.0; a2dVarTp0 = 0.0; a2dVarRb = -0.9
-        !------------------------------------------------------------------------------------------
-
-        !------------------------------------------------------------------------------------------
-        ! Calculating distributed Richardson number (Richardson from -1 to 0 values)
-        where((a2dVarDEM.gt.0.0) .and. (a2dVarWind.gt.0.0))
-
-            a2dVarTp = a2dVarTaK*(1000.0/a2dVarPa)**(dRd/dCp)
-            a2dVarTp0 = a2dVarLST*(1000.0/a2dVarPa)**(dRd/dCp)
-            a2dVarRb = (dG/a2dVarTp)*(a2dVarTp - a2dVarTp0)*dZRef/(a2dVarWind**2)
-
-        elsewhere(a2dVarDEM.gt.0.0)
-
-            a2dVarTp = a2dVarTaK*(1000.0/a2dVarPa)**(dRd/dCp)
-            a2dVarTp0 = a2dVarLST*(1000.0/a2dVarPa)**(dRd/dCp)
-            a2dVarRb = (dG/a2dVarTp)*(a2dVarTp - a2dVarTp0)*dZRef/(0.1**2)
-
-        elsewhere(a2dVarDEM.le.0.0)
-
-            a2dVarRb = 0.0
-            a2dVarTp0 = 0.0
-            a2dVarTp = 0.0
-
-        endwhere
-        !------------------------------------------------------------------------------------------
-    :return:
-    """
-
-    print('Richardson')
+    return var_rb
 
 
 def compute_tdeep():

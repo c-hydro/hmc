@@ -6,7 +6,7 @@ import xarray as xr
 from typing import Optional
 
 from hmc.generic_toolkit.data.lib_io_utils import substitute_string_by_date, substitute_string_by_tags
-from hmc.generic_toolkit.data.lib_io_variables import fill_var_generic, fill_var_air_pressure
+from hmc.generic_toolkit.data.lib_io_variables import fill_var_generic, fill_var_air_pressure, fill_var_error
 from hmc.generic_toolkit.data.io_handler_base import IOHandler
 from hmc.generic_toolkit.data.zip_handler_base import ZipHandler
 
@@ -29,8 +29,9 @@ class IOWrapper(IOHandler):
 class DynamicSrcHandler(ZipWrapper, IOWrapper):
 
     type_class = 'io_dynamic_src'
-    type_fx_fill = {'tair': 'fill_var_generic',
-                    'rh': 'fill_var_generic', 'air_p': 'fill_var_air_pressure'}
+    type_data_fill = {'rain': fill_var_generic, 'airt': fill_var_generic,
+                      'wind': fill_var_generic, 'inc_rad': fill_var_generic,
+                      'rh': fill_var_generic, 'airp': fill_var_air_pressure}
 
     def __init__(self, folder_name: str, file_name: str, file_version: str = 'hmc_netcdf_v1',
                  vars_list: list = None, vars_mapping: dict = None) -> None:
@@ -124,7 +125,10 @@ class DynamicSrcHandler(ZipWrapper, IOWrapper):
             file_data_out = xr.Dataset(coords={'longitude': file_geo_x, 'latitude': file_geo_y})
             for var_name, var_data in file_dict.items():
 
-                da_data = xr.DataArray(var_data, coords=[file_geo_y, file_geo_x], dims=['latitude', 'longitude'])
+                da_data = xr.DataArray(var_data,
+                                       coords={'latitude': file_geo_y, 'longitude': file_geo_x},
+                                       dims=['latitude', 'longitude'])
+
                 file_data_out[var_name] = da_data
 
             file_data_out.attrs = {'time': file_time}
@@ -134,15 +138,32 @@ class DynamicSrcHandler(ZipWrapper, IOWrapper):
 
         return file_data_out
 
-    def fill_file_data(self, file_data: xr.Dataset, vars_tags: list, vars_mandatory: list) -> xr.Dataset:
+    def fill_file_data(self, file_data: xr.Dataset, ref_data: xr.DataArray,
+                       vars_tags: list, vars_mandatory: list, vars_no_data: list) -> xr.Dataset:
 
-        file_vars = list(file_data.variables)
+        file_geo_x, file_geo_y = file_data['longitude'].values, file_data['latitude'].values
+        ref_values = ref_data.values
 
-        for var_name in file_vars:
-            var_data = file_data[var_name].values
-            if np.all(var_data == -9999.0):
-                var_fx_fill = self.type_fx_fill.get(var_name)
-                file_data[var_name].values = var_fx_fill(var_data, file_template, file_time)
-            self.fx_data = self.type_data_grid.get(self.file_format, self.error_data)
+        for var_tag, vars_mandatory, var_no_data in zip(vars_tags, vars_mandatory, vars_no_data):
+
+            if var_tag in list(file_data.variables):
+
+                var_data = file_data[var_tag].values
+                if np.all(var_data == var_no_data):
+                    var_fx_fill = self.type_data_fill.get(var_tag, fill_var_error)
+                    var_data = var_fx_fill(terrain=ref_values, default_value=var_no_data, no_data_value=var_no_data)
+                    file_data[var_tag].values = var_data
+            else:
+                if vars_mandatory:
+                    raise ValueError(f'Variable {var_tag} not found in file data.')
+                else:
+                    var_fx_fill = self.type_data_fill.get(var_tag, fill_var_error)
+                    var_data = var_fx_fill(terrain=ref_values, default_value=var_no_data)
+                    var_data[var_data == var_no_data] = np.nan
+                    da_data = xr.DataArray(var_data,
+                                           coords={'latitude': file_geo_y, 'longitude': file_geo_x},
+                                           dims=['latitude', 'longitude'])
+                    file_data[var_tag] = da_data
 
         return file_data
+

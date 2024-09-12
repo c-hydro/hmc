@@ -141,7 +141,7 @@ def hmc_main():
             driver_data_dynamic = DynamicDriver(
                 obj_namelist=namelist_obj,
                 obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
-                obj_reference=reference_dynamic_obj)
+                obj_reference=reference_static_terrain)
             # method to organize dynamic data
             dset_data_dynamic_src_obj = driver_data_dynamic.organize_data(
                 time_step, namelist_data_dynamic_obj, namelist_tags_obj)
@@ -150,7 +150,9 @@ def hmc_main():
             driver_phys = PhysDriver(dset_geo_generic, dset_geo_params,
                                      dset_data_dynamic_src_obj, reference_static_terrain)
             dset_phys_lsm = driver_phys.wrap_physics_lsm(
-                dset_geo_lsm, dset_geo_routing=None, dset_phys_volume=dset_phys_volume)
+                dset_geo_lsm=dset_geo_lsm, dset_geo_routing=None,
+                dset_phys_lsm=dset_phys_lsm,
+                dset_phys_volume=dset_phys_volume)
 
             time_handler.time_data_src_grid = time_handler.get_next_time(
                 time_handler.time_data_src_grid, time_handler.dt_data_src_grid)

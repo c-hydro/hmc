@@ -65,7 +65,7 @@ class LSMHandler:
         var_rh = get_variable_data(dset_data, var_name='rh', var_mandatory=True)
         var_inc_rad = get_variable_data(dset_data, var_name='inc_rad', var_mandatory=True)
         var_wind = get_variable_data(dset_data, var_name='wind', var_mandatory=True)
-        var_pair = get_variable_data(dset_data, var_name='pair', var_mandatory=False)
+        var_pair = get_variable_data(dset_data, var_name='airp', var_mandatory=False)
 
         # adapt variables
         var_tair_k = var_tair_c + self.t_ref
