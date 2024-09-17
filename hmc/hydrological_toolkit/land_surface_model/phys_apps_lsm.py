@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # method to compute beta function
 def compute_beta_function(sm: np.ndarray, ct_wp: np.ndarray, ct: np.ndarray,
                           mask: np.ndarray, kb1: np.ndarray, kc1: np.ndarray,
-                          bf_min: float, bf_max: float) -> (np.ndarray, np.ndarray):
+                          bf_min: float, bf_max: float, **kwargs) -> (np.ndarray, np.ndarray):
 
     # compute beta function values
     var_bf = np.zeros_like(sm)
@@ -30,7 +30,7 @@ def compute_beta_function(sm: np.ndarray, ct_wp: np.ndarray, ct: np.ndarray,
 
 def compute_thermal_inertia(sm: np.ndarray, mask: np.ndarray,
                             rho_s: float, rho_w: float, cp_s: float, cp_w: float,
-                            kq: float, kw: float, ko: float, fq_s: float, por_s: float):
+                            kq: float, kw: float, ko: float, fq_s: float, por_s: float, **kwargs) -> np.ndarray:
 
     # variable(s) conditions
     var_sm = deepcopy(sm)
@@ -78,38 +78,94 @@ def compute_thermal_inertia(sm: np.ndarray, mask: np.ndarray,
 # method to compute richardson number
 def compute_richardson(wind: np.ndarray, ta_k: np.ndarray, pa: np.ndarray,
                        lst: np.ndarray, mask: np.ndarray,
-                       rd: float, cp: float, g: float, z_ref: float) -> np.ndarray:
+                       rd: float, cp: float, g: float, z_ref: float, **kwargs) -> np.ndarray:
 
     var_tp = np.zeros_like(mask)
     var_tp = np.where(mask == 0.0, 0.0, var_tp)
     var_tp = np.where(mask == 1.0, ta_k * (1000.0 / pa) ** (rd / cp), var_tp)
     var_tp = np.where((mask == 1.0) & (wind > 0.0), ta_k * (1000.0 / pa) ** (rd / cp), var_tp)
+    var_tp[mask == 0.0] = np.nan
 
     var_tp0 = np.zeros_like(mask)
     var_tp0 = np.where(mask == 0.0, 0.0, var_tp0)
     var_tp0 = np.where(mask == 1.0, lst * (1000.0 / pa) ** (rd / cp), var_tp0)
     var_tp0 = np.where((mask == 1.0) & (wind > 0.0), lst * (1000.0 / pa) ** (rd / cp), var_tp0)
+    var_tp0[mask == 0.0] = np.nan
 
     var_rb = np.zeros_like(mask)
+    var_rb[:, :] = -0.9
     var_rb = np.where(mask == 0.0, 0.0, var_rb)
-    var_rb = np.where(mask == 1.0, (g / var_tp) * (var_tp - var_tp0) * z_ref / (0.1 ** 2), var_rb)
+    var_rb = np.where((mask == 1.0) % (wind <= 0.0), (g / var_tp) * (var_tp - var_tp0) * z_ref / (0.1 ** 2), var_rb)
     var_rb = np.where((mask == 1.0) & (wind > 0.0), (g / var_tp) * (var_tp - var_tp0) * z_ref / (wind ** 2), var_rb)
-
-    plt.figure(); plt.imshow(wind); plt.colorbar();
-    plt.figure(); plt.imshow(ta_k); plt.colorbar();
-    plt.figure(); plt.imshow(pa); plt.colorbar();
-    plt.figure(); plt.imshow(lst); plt.colorbar();
-    plt.figure(); plt.imshow(var_tp); plt.colorbar();
-    plt.figure(); plt.imshow(var_tp0); plt.colorbar();
-    plt.figure(); plt.imshow(var_rb); plt.colorbar();
-
-    plt.show()
+    var_rb[mask == 0.0] = np.nan
 
     return var_rb
 
 
-def compute_tdeep():
-    print('Tdeep')
+# method to compute deep soil temperature
+def compute_td(ta_k: np.ndarray, ta_k_marked: np.ndarray, ta_k_day: np.ndarray, mask: np.ndarray,
+               t_ref: float, time_step_day: int = 24, time_step_marked: int = 3, time_step_shift: int = 2, **kwargs) \
+        -> (np.ndarray, np.ndarray, np.ndarray):
+
+    if np.all(ta_k_day <= 0.0):
+        ta_k_day[:, :, :] = ta_k
+        ta_k_day[time_step_day - 1, :, :] = ta_k + 10.0
+        ta_k_day = np.where(mask == 0.0, 0.0, ta_k_day)
+    else:
+        ta_k_day[1:time_step_day, :, :] = ta_k_day[0:time_step_day-1, :, :]
+        ta_k_day[time_step_day - 1, :, :] = ta_k
+        ta_k_day = np.where(mask == 0.0, 0.0, ta_k_day)
+
+    ta_k_day_avg_all = np.sum(ta_k_day[0:time_step_day, :, :], axis=0) / time_step_day
+    ta_k_day_avg_all = np.where(mask == 0.0, 0.0, ta_k_day_avg_all)
+    ta_k_day_avg_half = np.sum(ta_k_day[(time_step_day//2 + 1):time_step_day, :, :], axis=0) / (time_step_day//2)
+    ta_k_day_avg_half = np.where(mask == 0.0, 0.0, ta_k_day_avg_half)
+
+    if np.all(ta_k_marked <= 0.0):
+        ta_k_marked[0:time_step_marked, :, :] = t_ref + 17.3
+    else:
+        ta_k_marked[1:time_step_marked, :, :] = ta_k_marked[0:time_step_marked-1, :]
+        ta_k_marked[time_step_marked - 1, :, :] = ta_k_day_avg_all + (ta_k_day_avg_half - ta_k_day_avg_all) / np.exp(1.0)
+        ta_k_marked = np.where(mask == 0.0, 0.0, ta_k_marked)
+
+    time_step_td = int(time_step_marked - time_step_shift * 24/time_step_day)
+    td = ta_k_marked[time_step_td, :, :]
+    td = np.where(mask == 0.0, 0.0, td)
+
+    return td, ta_k_day, ta_k_marked
+
+
+# method to compute ch
+def compute_ch(wind: np.ndarray, bf: np.ndarray, rb: np.ndarray, mask: np.ndarray,
+               ch: float = -7.3) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
+
+    # compute static values
+    var_psi = np.log(2.0)
+    var_ch_n = np.exp(ch)
+
+    # compute psi stable values (from 1 to 3)
+    var_psi_stable = np.zeros_like(mask)
+    var_psi_stable = np.where(mask == 1.0, 1.0, var_psi_stable)
+    var_psi_stable = np.where((rb <= 0.0) & (mask > 0.0), 1 + np.exp(var_psi) * (1 - np.exp(10 * rb)), var_psi_stable)
+
+    # compute ch values
+    var_ch = np.zeros_like(mask)
+    var_ch = np.where((mask == 1.0) & (wind > 0), var_ch_n * var_psi_stable, var_ch)
+
+    # compute resistances
+    var_ratm = np.zeros_like(mask)
+    var_ratm = np.where(mask == 1.0, 10000.0, var_ratm)
+    var_ratm = np.where((mask == 1.0) & (wind > 0), 1.0 / (var_ch * wind), var_ratm)
+
+    var_rsurf = np.zeros_like(mask)
+    var_rsurf = np.where(mask == 1.0, 10000.0, var_rsurf)
+    var_rsurf = np.where((mask == 1.0) & (wind > 0), var_ratm / bf, var_rsurf)
+
+    var_rsurf_pot = np.zeros_like(mask)
+    var_rsurf_pot = np.where(mask == 1.0, 10000.0, var_rsurf_pot)
+    var_rsurf_pot = np.where((mask == 1.0) & (wind > 0), var_ratm, var_rsurf_pot)
+
+    return var_ch, var_ratm, var_rsurf, var_rsurf_pot
 
 
 def runge_kutta():

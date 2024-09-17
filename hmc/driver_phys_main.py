@@ -12,8 +12,12 @@ from hmc.hydrological_toolkit.land_surface_model.phys_handler_lsm import LSMHand
 # class to handle driver physics
 class PhysDriver(object):
 
-    def __init__(self, dset_geo_generic: xr.Dataset, dset_geo_parameters: xr.Dataset,
+    def __init__(self, time_step: pd.Timestamp, time_info: dict,
+                 dset_geo_generic: xr.Dataset, dset_geo_parameters: xr.Dataset,
                  dset_data: xr.Dataset, da_reference: xr.DataArray) -> None:
+
+        self.time_step = time_step
+        self.time_info = time_info
 
         self.dset_geo_generic = dset_geo_generic
         self.dset_geo_parameters = dset_geo_parameters
@@ -30,7 +34,8 @@ class PhysDriver(object):
         driver_phys_lsm = LSMHandler(dset_geo_generic=self.dset_geo_generic,
                                      dset_geo_parameters=self.dset_geo_parameters,
                                      dset_geo_lsm=dset_geo_lsm, dset_geo_routing=dset_geo_routing,
-                                     da_reference=self.da_reference)
+                                     da_reference=self.da_reference,
+                                     time_step=self.time_step, time_info=self.time_info)
         # execute lsm routine(s)
         driver_phys_lsm.execute(dset_data=self.dset_data,
                                 dset_phys_lsm=dset_phys_lsm, dset_phys_volume=dset_phys_volume)

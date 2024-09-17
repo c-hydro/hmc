@@ -72,14 +72,14 @@ def hmc_main():
         folder_name=namelist_obj['settings']['path_data_static_grid'], file_name='{domain_name}.dem.txt',
         file_tags={'domain_name':  namelist_obj['parameters']['domain_name']},
         file_template=namelist_tags_obj.tags_string)
-    reference_static_terrain = info_handler.get_file_info()
+    reference_static_obj_terrain = info_handler.get_file_info()
 
     info_handler = info_handler_base.InfoHandler.organize_file_obj(
         folder_name=namelist_obj['settings']['path_data_static_grid'], file_name='{domain_name}.areacell.txt',
         file_tags={'domain_name':  namelist_obj['parameters']['domain_name']},
         file_template=namelist_tags_obj.tags_string)
     # define reference static object
-    reference_static_cell_area = info_handler.get_file_info()
+    reference_static_obj_cell_area = info_handler.get_file_info()
 
     # method to define info dynamic handler
     info_handler = info_handler_base.InfoHandler.organize_file_obj(
@@ -101,7 +101,9 @@ def hmc_main():
 
     # ------------------------------------------------------------------------------------------------------------------
     # driver variables
-    driver_variables = VariablesDriver(parameters=namelist_obj['parameters'], da_reference=reference_static_terrain)
+    driver_variables = VariablesDriver(
+        parameters=namelist_obj['parameters'],
+        da_reference=reference_static_obj_terrain, time_reference=reference_time_obj)
     vars_geo_generic, vars_geo_routing, vars_geo_horton, vars_geo_wt, vars_geo_lsm = driver_variables.allocate_variables_geo()
     vars_data_src = driver_variables.allocate_variables_data()
     dset_phys_lsm, dset_phys_volume, dset_phys_et, dset_phys_routing = driver_variables.allocate_variables_phys()
@@ -112,14 +114,14 @@ def hmc_main():
     driver_data_static = StaticDriver(
         obj_namelist=namelist_obj,
         obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
-        obj_reference=reference_static_terrain)
+        obj_reference=reference_static_obj_terrain)
     # method to organize static data
     data_geo_grid, data_geo_array = driver_data_static.organize_data(namelist_data_static_obj, namelist_tags_obj)
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
     # driver physics geo
-    driver_geo = GeoDriver(data_geo_grid, data_geo_array, reference_static_terrain,
+    driver_geo = GeoDriver(data_geo_grid, data_geo_array, reference_static_obj_terrain,
                            parameters=namelist_obj['parameters'])
     # method to wrap geo routine(
     dset_geo_generic, dset_geo_params, dset_geo_volume, dset_geo_lsm, dset_geo_horton, dset_geo_surface = driver_geo.wrap_geo()
@@ -141,14 +143,17 @@ def hmc_main():
             driver_data_dynamic = DynamicDriver(
                 obj_namelist=namelist_obj,
                 obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
-                obj_reference=reference_static_terrain)
+                obj_reference=reference_static_obj_terrain)
             # method to organize dynamic data
             dset_data_dynamic_src_obj = driver_data_dynamic.organize_data(
                 time_step, namelist_data_dynamic_obj, namelist_tags_obj)
 
             # driver physics
-            driver_phys = PhysDriver(dset_geo_generic, dset_geo_params,
-                                     dset_data_dynamic_src_obj, reference_static_terrain)
+            driver_phys = PhysDriver(
+                time_step=time_step, time_info=reference_time_obj,
+                dset_geo_generic=dset_geo_generic, dset_geo_parameters=dset_geo_params,
+                dset_data=dset_data_dynamic_src_obj,
+                da_reference=reference_static_obj_terrain)
             dset_phys_lsm = driver_phys.wrap_physics_lsm(
                 dset_geo_lsm=dset_geo_lsm, dset_geo_routing=None,
                 dset_phys_lsm=dset_phys_lsm,

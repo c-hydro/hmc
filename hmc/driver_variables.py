@@ -13,10 +13,11 @@ from hmc.hydrological_toolkit.variables.lib_variable_utils import create_variabl
 # class to handle physics driver geo
 class VariablesDriver(object):
 
-    def __init__(self, parameters: dict, da_reference: xr.DataArray) -> None:
+    def __init__(self, parameters: dict, da_reference: xr.DataArray, time_reference: dict) -> None:
 
         self.parameters = parameters
         self.da_reference = da_reference
+        self.time_reference = time_reference
 
         self.rows, self.cols = self.da_reference.shape
 
@@ -51,12 +52,16 @@ class VariablesDriver(object):
             'pair': var_pair, 'lai': var_lai, 'albedo': var_albedo, 'fc': var_fc,
             'sm': var_sm, 'et_pot': var_et_pot}
         # convert data variables to xarray dataset
-        dset_data = create_dset_from_dict(obj_data, self.da_reference)
+        dset_data = create_dset_from_dict(obj_data, da_reference=self.da_reference)
 
         return dset_data
 
     # method to allocate variables phys
     def allocate_variables_phys(self) -> (xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset):
+
+        # get time steps variable(s)
+        time_steps_day = self.time_reference['time_steps_day']
+        time_step_marked = self.time_reference['time_steps_marked']
 
         # allocate lsm variables
         var_lst = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
@@ -65,12 +70,26 @@ class VariablesDriver(object):
         var_le = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
         var_g = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
         var_ef = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_tak24 = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_tak24_marked = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_tak_step_day = create_variable(
+            self.rows, self.cols, time=time_steps_day, var_dtype='float32', var_default_value=-9999.0)
+        var_tak_step_marked = create_variable(
+            self.rows, self.cols, time=time_step_marked, var_dtype='float32', var_default_value=-9999.0)
+
         # organize lsm variables
-        obj_phys_lsm = {'lst': var_lst, 'rn': var_rn, 'h': var_h, 'le': var_le, 'g': var_g, 'ef': var_ef}
+        obj_phys_lsm = {'lst': var_lst, 'rn': var_rn, 'h': var_h, 'le': var_le, 'g': var_g, 'ef': var_ef,
+                        'tak_step_day': var_tak_step_day, 'tak_step_marked': var_tak_step_marked}
+        time_phys_lsm = {'lst': None, 'rn': None, 'h': None, 'le': None, 'g': None, 'ef': None,
+                         'tak_step_day': time_steps_day, 'tak_step_marked': time_step_marked}
+        vars_coords = {'tak_step_day': ['time_steps_day', 'latitude', 'longitude'],
+                       'tak_step_marked': ['time_steps_marked', 'latitude', 'longitude']}
+        vars_dims = {'tak_step_day': ['time_steps_day', 'latitude', 'longitude'],
+                     'tak_step_marked': ['time_steps_marked', 'latitude', 'longitude']}
+
         # convert lsm variables to xarray dataset
-        dset_phys_lsm = create_dset_from_dict(obj_phys_lsm, self.da_reference)
+        dset_phys_lsm = create_dset_from_dict(
+            obj_phys_lsm,
+            vars_coords=vars_coords, vars_dims=vars_dims,
+            time_reference=time_phys_lsm, da_reference=self.da_reference)
 
         # allocate volume variables
         var_vtot = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
@@ -83,7 +102,7 @@ class VariablesDriver(object):
         obj_phys_volume = {'vtot': var_vtot, 'vret': var_vret, 'vsub': var_vsub, 'vloss': var_vloss,
                            'vext': var_vext, 'verr': var_verr}
         # convert volume variables to xarray dataset
-        dset_phys_volume = create_dset_from_dict(obj_phys_volume, self.da_reference)
+        dset_phys_volume = create_dset_from_dict(obj_phys_volume, da_reference=self.da_reference)
 
         # allocate et variables
         var_et = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
@@ -94,7 +113,7 @@ class VariablesDriver(object):
         # organize et variables
         obj_phys_et = {'et': var_et, 'etpot': var_etpot, 'ae': var_ae, 'aepot_3d': var_aepot_3d, 'ae_3d': var_ae_3d}
         # convert et variables to xarray dataset
-        dset_phys_et = create_dset_from_dict(obj_phys_et, self.da_reference)
+        dset_phys_et = create_dset_from_dict(obj_phys_et, da_reference=self.da_reference)
 
         # allocate routing variables
         var_hydro = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.000001)
@@ -116,7 +135,7 @@ class VariablesDriver(object):
                             'qtot': var_qtot, 'intensity': var_intensity, 'flowdeep': var_flowdeep,
                             'flowexf': var_flowexf, 'ucact': var_ucact, 'udt': var_udt}
         # convert routing variables to xarray dataset
-        dset_phys_routing = create_dset_from_dict(obj_phys_routing, self.da_reference)
+        dset_phys_routing = create_dset_from_dict(obj_phys_routing, da_reference=self.da_reference)
 
         return dset_phys_lsm, dset_phys_volume, dset_phys_et, dset_phys_routing
 
@@ -135,8 +154,9 @@ class VariablesDriver(object):
         obj_geo_data = {'terrain': var_terrain, 'fdir': var_fdir, 'cnet': var_cnet, 'mask': var_mask,
                         'cell_area': var_cell_area,
                         'cn': var_cn, 's': var_s}
+
         # convert geo variables to xarray dataset
-        dset_geo_data = create_dset_from_dict(obj_geo_data, self.da_reference)
+        dset_geo_data = create_dset_from_dict(obj_geo_data, da_reference=self.da_reference)
 
         # initialize routing variables
         var_ct = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('ct'))
@@ -146,7 +166,7 @@ class VariablesDriver(object):
         # organize routing variables
         obj_geo_routing = {'ct': var_ct, 'cf': var_cf, 'uc': var_uc, 'uh': var_uh}
         # convert routing variables to xarray dataset
-        dset_geo_routing = create_dset_from_dict(obj_geo_routing, self.da_reference)
+        dset_geo_routing = create_dset_from_dict(obj_geo_routing, da_reference=self.da_reference)
 
         # initialize horton variables
         var_c1 = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
@@ -158,7 +178,7 @@ class VariablesDriver(object):
         obj_geo_horton = {'c1': var_c1, 'f2': var_f2,
                           'cost_f': var_cost_f, 'cost_f1': var_cost_f1, 'cost_ch_fix': var_cost_ch_fix}
         # convert horton variables to xarray dataset
-        dset_geo_horton = create_dset_from_dict(obj_geo_horton, self.da_reference)
+        dset_geo_horton = create_dset_from_dict(obj_geo_horton, da_reference=self.da_reference)
 
         # initialize water-table variables
         var_wt = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
@@ -168,7 +188,7 @@ class VariablesDriver(object):
         # organize water-table variables
         obj_geo_wt = {'wt': var_wt, 'wt_max': var_wt_max, 'wt_alpha': var_wt_alpha, 'wt_beta': var_wt_beta}
         # convert water-table variables to xarray dataset
-        dset_geo_wt = create_dset_from_dict(obj_geo_wt, self.da_reference)
+        dset_geo_wt = create_dset_from_dict(obj_geo_wt, da_reference=self.da_reference)
 
         # initialize lsm variables
         var_ct_wp = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
@@ -181,7 +201,7 @@ class VariablesDriver(object):
         obj_geo_lsm = {
             'ct_wp': var_ct_wp, 'kb_1': var_kb1, 'kc_1': var_kc1, 'kb_2': var_kb2, 'kc_2': var_kc2}
         # convert lsm variables to xarray dataset
-        dset_geo_lsm = create_dset_from_dict(obj_geo_lsm, self.da_reference)
+        dset_geo_lsm = create_dset_from_dict(obj_geo_lsm, da_reference=self.da_reference)
 
         return dset_geo_data, dset_geo_routing, dset_geo_horton, dset_geo_wt, dset_geo_lsm
 

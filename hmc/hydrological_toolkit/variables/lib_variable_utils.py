@@ -28,7 +28,7 @@ def create_variable(rows, cols, time=None, var_default_value=-9999, var_dtype='f
 
     # create variable
     if time is not None:
-        var_data = np.zeros((rows, cols, time), dtype=var_dtype)
+        var_data = np.zeros((time, rows, cols), dtype=var_dtype)
         var_data[:, :, :] = var_default_value
     else:
         var_data = np.zeros((rows, cols), dtype=var_dtype)
@@ -61,14 +61,59 @@ def get_variable_data(dset_data: xr.Dataset,
 
 # ----------------------------------------------------------------------------------------------------------------------
 # method to convert variables dictionary to xarray dataset
-def create_dset_from_dict(vars_dict: dict, da_reference: xr.DataArray) -> xr.Dataset:
+def create_dset_from_dict(vars_dict: dict, vars_coords: dict = None, vars_dims: dict = None,
+                          da_reference: xr.DataArray = None, time_reference: {} = None,
+                          coord_x : str = 'longitude', coord_y : str = 'latitude', coord_time : str = 'time',
+                          dim_x : str = 'longitude', dim_y : str = 'latitude', dim_time : str = 'time') -> xr.Dataset:
 
-    geo_x, geo_y = da_reference['longitude'].values, da_reference['latitude'].values
+    if da_reference is None:
+        raise RuntimeError('Reference DataArray must be defined')
+
+    if vars_coords is None:
+        vars_coords = {}
+        for var_name in vars_dict.keys():
+            vars_coords[var_name] = [coord_time, coord_y, coord_x]
+    if vars_dims is None:
+        vars_dims = {}
+        for var_name in vars_dict.keys():
+            vars_dims[var_name] = [dim_time, dim_y, dim_x]
+
+    geo_x, geo_y = da_reference[coord_x].values, da_reference[coord_y].values
 
     dset_data = None
     for var_name, var_data in vars_dict.items():
+
+        var_time_period = None
+        if time_reference is not None:
+            if var_name in list(time_reference.keys()):
+                var_time_length = time_reference[var_name]
+                if var_time_length is not None:
+                    var_time_period = np.arange(0, var_time_length, 1)
+
+        if var_name not in list(vars_coords.keys()):
+            data_dims = [dim_time, dim_y, dim_x]
+        else:
+            data_dims = vars_dims[var_name]
+
+        if var_name not in list(vars_coords.keys()):
+            data_coords = [coord_time, coord_y, coord_x]
+        else:
+            data_coords = vars_coords[var_name]
+
         if var_data is not None:
-            da_data = xr.DataArray(var_data, coords=[geo_y, geo_x], dims=['latitude', 'longitude'])
+            if var_time_period is None:
+                coord_y, coord_x = data_coords[1], data_coords[2]
+                dim_y, dim_x = data_dims[1], data_dims[2]
+                da_data = xr.DataArray(var_data,
+                                       coords={coord_y: geo_y, coord_x: geo_x},
+                                       dims=[dim_y, dim_x])
+            else:
+                coord_time, coord_y, coord_x = data_coords[0], data_coords[1], data_coords[2]
+                dim_time, dim_y, dim_x = data_dims[0], data_dims[1], data_dims[2]
+                da_data = xr.DataArray(var_data,
+                                       coords={coord_time: var_time_period, coord_y: geo_y, coord_x: geo_x},
+                                       dims=[dim_time, dim_y, dim_x])
+
             if dset_data is None:
                 dset_data = xr.Dataset()
             dset_data[var_name] = da_data
