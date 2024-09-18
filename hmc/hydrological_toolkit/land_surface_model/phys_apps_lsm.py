@@ -168,8 +168,115 @@ def compute_ch(wind: np.ndarray, bf: np.ndarray, rb: np.ndarray, mask: np.ndarra
     return var_ch, var_ratm, var_rsurf, var_rsurf_pot
 
 
-def runge_kutta():
-    print('Runge-Kutta')
+# method to compute land surface temperature
+def compute_lst(ta_k: np.ndarray, airp: np.ndarray,
+                lst: np.ndarray,
+                td: np.ndarray, pit: np.ndarray,
+                ratm: np.ndarray, rsurf: np.ndarray,
+                rn: np.ndarray, lambda_v: np.ndarray, ea: np.ndarray, rhoa: np.ndarray,
+                mask: np.ndarray,
+                t_ref: float, lst_delta_max: float, cp: float,
+                dt_data_src: int = 3600, dt_delta_min: int = 900,
+                **kwargs) -> np.ndarray:
+
+    # compute land surface temperature integrating delta for runge-kutta method
+    dt_delta_min = min(int(dt_data_src), dt_delta_min)
+    dt_delta_steps = int(int(dt_data_src) / int(dt_delta_min))
+
+    # get land surface temperature
+    lst = np.where(mask == 1, lst, np.nan)
+    lst_prev = np.zeros_like(lst)
+    lst_prev = np.where(mask == 1, lst, lst_prev)
+
+    # iterate over delta steps
+    for i_step in range(0, dt_delta_steps):
+
+        print(i_step)
+
+        # solve runge-kutta 4th order
+        lst_upd = solve_rk4(
+            int_delta=dt_delta_min,
+            ta_k=ta_k, airp=airp,
+            lst_in=deepcopy(lst_prev), td=td, pit=pit,ratm=ratm, rsurf=rsurf,
+            rn=rn, lmda=lambda_v, ea=ea, rhoa=rhoa,
+            mask=mask, t_ref=t_ref, lst_delta_max=lst_delta_max, cp=cp)
+
+        # update land surface temperature (after each step)
+        lst_prev = deepcopy(lst_upd)
+
+    # check land surface temperature
+    lst_upd = np.where(mask == 1, lst_upd, 0)
+    # check land surface temperature min
+    lst_upd = np.where(lst_upd < (273.15 - 70.0), lst, lst_upd)
+    # check land surface temperature delta max
+    lst_upd = np.where(lst_upd > (lst_delta_max * dt_data_src/3600), lst, lst_upd)
+
+    # check land surface temperature min or max (after previous checks)
+    lst_upd = np.where((lst_upd < (273.15 - 70.0)) | (lst_upd > (273.15 + 70.0)), 273.15 + 20, lst_upd)
+    lst_upd = np.where(mask == 1, lst_upd, np.nan)
+
+    return lst_upd
 
 
+# method to solve runge-kutta 4th order
+def solve_rk4(
+        int_delta: float,
+        ta_k: np.ndarray, airp: np.ndarray,
+        lst_in: np.ndarray,
+        td: np.ndarray, pit: np.ndarray,
+        ratm: np.ndarray, rsurf: np.ndarray,
+        rn: np.ndarray, lmda: np.ndarray, ea: np.ndarray, rhoa: np.ndarray,
+        mask: np.ndarray,
+        t_ref: float = 273.15, lst_delta_max: float = 40.0, cp: float = 1004.0) -> np.ndarray:
 
+    # define constants
+    pi_greco = 3.14
+    omega = 1.0 / (60.0 * 60.0 * 24.0)
+
+    # initialize variables
+    lst_out = deepcopy(lst_in)
+
+    # compute K1 argument
+    k1 = int_delta * (2 * np.sqrt(pi_greco * omega) / pit * (
+            rn - rhoa * cp * (lst_out - ta_k) / ratm -
+            rhoa * lmda * (0.611 * np.exp(17.3 * (lst_in - t_ref) / (237.3 + lst_in - t_ref)) - ea) / (
+                    airp * rsurf) * 0.622) - 2 * pi_greco * omega * (lst_in - td))
+    k1 = np.where(k1 > lst_delta_max, lst_delta_max, k1)
+
+    # update LST using K1 argument
+    lst_out = lst_in + k1 / 2.0
+
+    # compute K2 argument
+    k2 = int_delta * (2 * np.sqrt(pi_greco * omega) / pit * (
+            rn - rhoa * cp * (lst_out - ta_k) / ratm -
+            rhoa * lmda * (0.611 * np.exp(17.3 * (lst_out - t_ref) / (237.3 + lst_out - t_ref)) - ea) / (
+                    airp * rsurf) * 0.622) - 2 * pi_greco * omega * (lst_out - td))
+    k2 = np.where(k2 > lst_delta_max, lst_delta_max, k2)
+
+    # update LST using K2 argument
+    lst_out = lst_in + k2 / 2.0
+
+    # compute K3 argument
+    k3 = int_delta * (2 * np.sqrt(pi_greco * omega) / pit * (
+            rn - rhoa * cp * (lst_out - ta_k) / ratm -
+            rhoa * lmda * (0.611 * np.exp(17.3 * (lst_out - t_ref) / (237.3 + lst_out - t_ref)) - ea) / (
+                    airp * rsurf) * 0.622) - 2 * pi_greco * omega * (lst_out - td))
+    k3 = np.where(k3 > (lst_delta_max / 2), lst_delta_max / 2, k3)
+
+    # update LST using K3 argument
+    lst_out = lst_in + k3
+
+    # compute K4 argument
+    k4 = int_delta * (2 * np.sqrt(pi_greco * omega) / pit * (
+            rn - rhoa * cp * (lst_out - ta_k) / ratm -
+            rhoa * lmda * (0.611 * np.exp(17.3 * (lst_out - t_ref) / (237.3 + lst_out - t_ref)) - ea) / (
+                    airp * rsurf) * 0.622) - 2 * pi_greco * omega * (lst_out - td))
+    k4 = np.where(k4 > lst_delta_max, lst_delta_max, k4)
+
+    # update LST using K4 argument
+    lst_out = lst_in + (k1 + 2 * (k2 + k3) + k4) / 6.0
+
+    # apply mask
+    lst_out = np.where(mask == 1, lst_out, 0)
+
+    return lst_out
