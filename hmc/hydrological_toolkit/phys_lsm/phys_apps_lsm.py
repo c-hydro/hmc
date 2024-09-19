@@ -191,8 +191,6 @@ def compute_lst(ta_k: np.ndarray, airp: np.ndarray,
     # iterate over delta steps
     for i_step in range(0, dt_delta_steps):
 
-        print(i_step)
-
         # solve runge-kutta 4th order
         lst_upd = solve_rk4(
             int_delta=dt_delta_min,
@@ -204,12 +202,13 @@ def compute_lst(ta_k: np.ndarray, airp: np.ndarray,
         # update land surface temperature (after each step)
         lst_prev = deepcopy(lst_upd)
 
-    # check land surface temperature
-    lst_upd = np.where(mask == 1, lst_upd, 0)
+    # mask land surface temperature
+    lst_upd = np.where(mask == 1, lst_upd, np.nan)
+
     # check land surface temperature min
     lst_upd = np.where(lst_upd < (273.15 - 70.0), lst, lst_upd)
-    # check land surface temperature delta max
-    lst_upd = np.where(lst_upd > (lst_delta_max * dt_data_src/3600), lst, lst_upd)
+    # check land surface temperature min
+    lst_upd = np.where(lst_upd > (273.15 + 70.0), lst, lst_upd)
 
     # check land surface temperature min or max (after previous checks)
     lst_upd = np.where((lst_upd < (273.15 - 70.0)) | (lst_upd > (273.15 + 70.0)), 273.15 + 20, lst_upd)

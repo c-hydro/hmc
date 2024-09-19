@@ -61,7 +61,7 @@ class GeoDriver(GeoHandler):
         dset_params = driver_params.organize_data()
 
         # method to organize, analyze and save volume object(s)
-        driver_volume = VolumeHandler(da_s=dset_geo['s'], da_terrain=dset_geo['terrain'],
+        driver_volume = VolumeHandler(da_s=dset_geo['s'], da_terrain=dset_geo['terrain'], da_ct=dset_geo['ct'],
                                       da_reference=dset_geo['mask'], parameters=self.parameters)
         dset_volume = driver_volume.organize_data()
 
@@ -86,7 +86,7 @@ class GeoDriver(GeoHandler):
         return dset_geo, dset_params, dset_volume, dset_lsm, dset_horton, dset_surface
 
     @staticmethod
-    def organize_geo(dset_data: xr.Dataset, dset_expected: xr.Dataset) -> xr.Dataset:
+    def organize_geo(dset_data: xr.Dataset, dset_expected: xr.Dataset, drop_variables: bool = False) -> xr.Dataset:
 
         vars_expected = list(dset_expected.variables)
         vars_dropped = []
@@ -95,10 +95,11 @@ class GeoDriver(GeoHandler):
                 dset_expected[var_name] = dset_data[var_name]
             else:
                 vars_dropped.append(var_name)
-                warnings.warn(f'Variable {var_name} already exists in dset_data_grid')
 
-        dset_expected = dset_expected.drop_vars(vars_dropped)
+        if drop_variables:
+            dset_expected = dset_expected.drop_vars(vars_dropped)
 
         return dset_expected
     # ----------------------------------------------------------------------------------------------------------------------
+
 # ----------------------------------------------------------------------------------------------------------------------

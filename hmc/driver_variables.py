@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from hmc.hydrological_toolkit.variables.lib_variable_utils import create_variable, create_dset_from_dict
+from hmc.hydrological_toolkit.variables.lib_variable_utils import create_variable_data, create_dset_from_dict
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -35,17 +35,17 @@ class VariablesDriver(object):
     def allocate_variables_data(self) -> xr.Dataset:
 
         # allocate data variables
-        var_rain = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_tair = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_rh = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_inc_rad = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_wind = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_pair = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_lai = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_albedo = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_fc = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_sm = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_et_pot = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_rain = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_tair = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_rh = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_inc_rad = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_wind = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_pair = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_lai = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_albedo = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_fc = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_sm = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_et_pot = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
         # organize data variables
         obj_data = {
             'rain': var_rain, 'tair': var_tair, 'rh': var_rh, 'inc_rad': var_inc_rad, 'wind': var_wind,
@@ -57,22 +57,22 @@ class VariablesDriver(object):
         return dset_data
 
     # method to allocate variables phys
-    def allocate_variables_phys(self) -> (xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset):
+    def allocate_variables_phys(self) -> (xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset):
 
         # get time steps variable(s)
         time_steps_day = self.time_reference['time_steps_day']
         time_step_marked = self.time_reference['time_steps_marked']
 
         # allocate lsm variables
-        var_lst = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_rn = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_h = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_le = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_g = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_ef = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_tak_step_day = create_variable(
+        var_lst = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_rn = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_h = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_le = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_g = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_ef = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_tak_step_day = create_variable_data(
             self.rows, self.cols, time=time_steps_day, var_dtype='float32', var_default_value=-9999.0)
-        var_tak_step_marked = create_variable(
+        var_tak_step_marked = create_variable_data(
             self.rows, self.cols, time=time_step_marked, var_dtype='float32', var_default_value=-9999.0)
 
         # organize lsm variables
@@ -91,44 +91,56 @@ class VariablesDriver(object):
             vars_coords=vars_coords, vars_dims=vars_dims,
             time_reference=time_phys_lsm, da_reference=self.da_reference)
 
+        # allocate phys_et variables
+        var_et = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_et_pot = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_ae = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_ae_3d = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_ae_3d_pot = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        # organize phys_et variables
+        obj_phys_et = {'et': var_et, 'et_pot': var_et_pot, 'ae': var_ae, 'ae_3d_pot': var_ae_3d_pot, 'ae_3d': var_ae_3d}
+        # convert phys_et variables to xarray dataset
+        dset_phys_et = create_dset_from_dict(obj_phys_et, da_reference=self.da_reference)
+
+        # allocate phys_snow variables
+        var_snow_mask = create_variable_data(self.rows, self.cols, var_dtype='int', var_default_value=0)
+        var_snow_age = create_variable_data(self.rows, self.cols, var_dtype='int', var_default_value=0)
+        var_snow_melting = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_snow_density = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        # organize phys_et variables
+        obj_phys_snow = {'snow_mask': var_snow_mask, 'snow_age': var_snow_age,
+                         'snow_melting': var_snow_melting, 'snow_density': var_snow_density}
+        # convert phys_et variables to xarray dataset
+        dset_phys_snow = create_dset_from_dict(obj_phys_snow, da_reference=self.da_reference)
+
         # allocate volume variables
-        var_vtot = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_vret = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.001)
-        var_vsub = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_vloss = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_vext = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_verr = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_v_tot = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_v_tot_wp = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_v_ret = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.001)
+        var_v_sub = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_v_loss = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_v_ext = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_v_err = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
         # organize volume variables
-        obj_phys_volume = {'vtot': var_vtot, 'vret': var_vret, 'vsub': var_vsub, 'vloss': var_vloss,
-                           'vext': var_vext, 'verr': var_verr}
+        obj_phys_volume = {'v_tot': var_v_tot, 'v_ret': var_v_ret, 'v_sub': var_v_sub, 'v_loss': var_v_loss,
+                           'v_ext': var_v_ext, 'v_err': var_v_err, 'v_tot_wp': var_v_tot_wp}
         # convert volume variables to xarray dataset
         dset_phys_volume = create_dset_from_dict(obj_phys_volume, da_reference=self.da_reference)
 
-        # allocate et variables
-        var_et = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_etpot = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_ae = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_aepot_3d = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_ae_3d = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        # organize et variables
-        obj_phys_et = {'et': var_et, 'etpot': var_etpot, 'ae': var_ae, 'aepot_3d': var_aepot_3d, 'ae_3d': var_ae_3d}
-        # convert et variables to xarray dataset
-        dset_phys_et = create_dset_from_dict(obj_phys_et, da_reference=self.da_reference)
-
         # allocate routing variables
-        var_hydro = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.000001)
-        var_hydro_prev = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.000001)
-        var_routing = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_darcy = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_qout = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_qdisout = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_qvolout = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_qtot = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_intensity = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_flowdeep = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_flowexf = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_ucact = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_udt = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_hydro = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.000001)
+        var_hydro_prev = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.000001)
+        var_routing = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_darcy = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_qout = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_qdisout = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_qvolout = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_qtot = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_intensity = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_flowdeep = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_flowexf = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_ucact = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_udt = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
         # organize routing variables
         obj_phys_routing = {'hydro': var_hydro, 'hydro_prev': var_hydro_prev, 'routing': var_routing,
                             'darcy': var_darcy, 'qout': var_qout, 'qdisout': var_qdisout, 'qvolout': var_qvolout,
@@ -137,19 +149,19 @@ class VariablesDriver(object):
         # convert routing variables to xarray dataset
         dset_phys_routing = create_dset_from_dict(obj_phys_routing, da_reference=self.da_reference)
 
-        return dset_phys_lsm, dset_phys_volume, dset_phys_et, dset_phys_routing
+        return dset_phys_lsm, dset_phys_et, dset_phys_snow, dset_phys_volume,  dset_phys_routing
 
     # method to allocate variables geo
     def allocate_variables_geo(self) -> (xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset):
 
         # initialize geo variables
-        var_terrain = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_fdir = create_variable(self.rows, self.cols, var_dtype='int', var_default_value=-9999)
-        var_cnet = create_variable(self.rows, self.cols, var_dtype='int', var_default_value=0)
-        var_mask = create_variable(self.rows, self.cols, var_dtype='int', var_default_value=0)
-        var_cell_area = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_cn = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
-        var_s = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=500.0)
+        var_terrain = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_fdir = create_variable_data(self.rows, self.cols, var_dtype='int', var_default_value=-9999)
+        var_cnet = create_variable_data(self.rows, self.cols, var_dtype='int', var_default_value=0)
+        var_mask = create_variable_data(self.rows, self.cols, var_dtype='int', var_default_value=0)
+        var_cell_area = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_cn = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        var_s = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=500.0)
         # organize geo variables
         obj_geo_data = {'terrain': var_terrain, 'fdir': var_fdir, 'cnet': var_cnet, 'mask': var_mask,
                         'cell_area': var_cell_area,
@@ -159,21 +171,21 @@ class VariablesDriver(object):
         dset_geo_data = create_dset_from_dict(obj_geo_data, da_reference=self.da_reference)
 
         # initialize routing variables
-        var_ct = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('ct'))
-        var_cf = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('cf'))
-        var_uc = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('uc'))
-        var_uh = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('uh'))
+        var_ct = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('ct'))
+        var_cf = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('cf'))
+        var_uc = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('uc'))
+        var_uh = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('uh'))
         # organize routing variables
         obj_geo_routing = {'ct': var_ct, 'cf': var_cf, 'uc': var_uc, 'uh': var_uh}
         # convert routing variables to xarray dataset
         dset_geo_routing = create_dset_from_dict(obj_geo_routing, da_reference=self.da_reference)
 
         # initialize horton variables
-        var_c1 = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_f2 = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_cost_f = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_cost_f1 = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_cost_ch_fix = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_c1 = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_f2 = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_cost_f = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_cost_f1 = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_cost_ch_fix = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
         # organize horton variables
         obj_geo_horton = {'c1': var_c1, 'f2': var_f2,
                           'cost_f': var_cost_f, 'cost_f1': var_cost_f1, 'cost_ch_fix': var_cost_ch_fix}
@@ -181,22 +193,22 @@ class VariablesDriver(object):
         dset_geo_horton = create_dset_from_dict(obj_geo_horton, da_reference=self.da_reference)
 
         # initialize water-table variables
-        var_wt = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_wt_max = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_wt_alpha = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_wt_beta = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_wt = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_wt_max = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_wt_alpha = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_wt_beta = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
         # organize water-table variables
         obj_geo_wt = {'wt': var_wt, 'wt_max': var_wt_max, 'wt_alpha': var_wt_alpha, 'wt_beta': var_wt_beta}
         # convert water-table variables to xarray dataset
         dset_geo_wt = create_dset_from_dict(obj_geo_wt, da_reference=self.da_reference)
 
         # initialize lsm variables
-        var_ct_wp = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_kb1 = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_kc1 = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_kb2 = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_kc2 = create_variable(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
-        var_veg_ia = create_variable(100, 2, var_dtype='float32', var_default_value=0.0)
+        var_ct_wp = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_kb1 = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_kc1 = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_kb2 = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_kc2 = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
+        var_veg_ia = create_variable_data(100, 2, var_dtype='float32', var_default_value=0.0)
         # organize lsm variables
         obj_geo_lsm = {
             'ct_wp': var_ct_wp, 'kb_1': var_kb1, 'kc_1': var_kc1, 'kb_2': var_kb2, 'kc_2': var_kc2}

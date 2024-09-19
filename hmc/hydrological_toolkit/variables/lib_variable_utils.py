@@ -9,7 +9,7 @@ import xarray as xr
 
 # ----------------------------------------------------------------------------------------------------------------------
 # method to create numpy variable
-def create_variable(rows, cols, time=None, var_default_value=-9999, var_dtype='float32'):
+def create_variable_data(rows, cols, time=None, var_default_value=-9999, var_dtype='float32'):
     """
     Create a variable with default value and dimensions.
 
@@ -39,7 +39,7 @@ def create_variable(rows, cols, time=None, var_default_value=-9999, var_dtype='f
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# method to get variable data
+# method to get variable data from dataset
 def get_variable_data(dset_data: xr.Dataset,
                       var_name: str, var_mandatory: bool = True,
                       var_type: str = 'float32', var_no_data: (float, int) = -9999.0) -> numpy.ndarray:
@@ -56,6 +56,30 @@ def get_variable_data(dset_data: xr.Dataset,
             var_data[:, :] = var_no_data
 
     return var_data
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# method to save variable data into dataset
+def save_variable_data(dset_data: xr.Dataset, var_data: np.ndarray,
+                       var_name: str, var_mandatory: bool = False,
+                       var_type: str = 'float32', var_no_data: (float, int) = -9999.0,
+                       var_dims: list = None) -> xr.Dataset:
+
+    if var_dims is None:
+        var_dims = ['latitude', 'longitude']
+
+    if var_name in list(dset_data.variables):
+        dset_data[var_name].values = var_data
+    else:
+        if var_mandatory:
+            raise ValueError('Variable "' + var_name + '" not found in dset_data')
+        else:
+            var_data = var_data.dtype(var_type)
+            var_data[np.isnan(var_data)] = var_no_data
+            var_da = xr.DataArray(var_data, dims=var_dims, name=var_name)
+            dset_data[var_name] = var_da
+    return dset_data
 # ----------------------------------------------------------------------------------------------------------------------
 
 

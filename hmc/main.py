@@ -106,7 +106,8 @@ def hmc_main():
         da_reference=reference_static_obj_terrain, time_reference=reference_time_obj)
     vars_geo_generic, vars_geo_routing, vars_geo_horton, vars_geo_wt, vars_geo_lsm = driver_variables.allocate_variables_geo()
     vars_data_src = driver_variables.allocate_variables_data()
-    dset_phys_lsm, dset_phys_volume, dset_phys_et, dset_phys_routing = driver_variables.allocate_variables_phys()
+    (dset_phys_lsm, dset_phys_et, dset_phys_snow,
+     dset_phys_volume, dset_phys_routing) = driver_variables.allocate_variables_phys()
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -154,11 +155,20 @@ def hmc_main():
                 dset_geo_generic=dset_geo_generic, dset_geo_parameters=dset_geo_params,
                 dset_data=dset_data_dynamic_src_obj,
                 da_reference=reference_static_obj_terrain)
-            dset_phys_lsm = driver_phys.wrap_physics_lsm(
-                dset_geo_lsm=dset_geo_lsm, dset_geo_routing=None,
-                dset_phys_lsm=dset_phys_lsm,
+
+            # wrap physics lsm routine(s)
+            dset_phys_lsm, dset_phys_et = driver_phys.wrap_physics_lsm(
+                dset_geo_lsm=dset_geo_lsm,
+                dset_phys_lsm=dset_phys_lsm, dset_phys_et=dset_phys_et, dset_phys_snow=dset_phys_snow,
                 dset_phys_volume=dset_phys_volume)
 
+            # wrap physics phys_et routine(s)
+            dset_phys_et, dset_phys_volume = driver_phys.wrap_physics_et(
+                dset_geo_lsm=dset_geo_lsm,
+                dset_phys_lsm=dset_phys_lsm, dset_phys_et=dset_phys_et, dset_phys_snow=dset_phys_snow,
+                dset_phys_volume=dset_phys_volume)
+
+            # update time
             time_handler.time_data_src_grid = time_handler.get_next_time(
                 time_handler.time_data_src_grid, time_handler.dt_data_src_grid)
 
