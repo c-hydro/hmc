@@ -68,7 +68,7 @@ class StaticHandler(IOWrapper):
 
         driver_data = cls(folder_name, file_name, file_mandatory, file_type)
 
-        if file_type == 'raster':
+        if 'raster' == file_type:
 
             file_obj = driver_data.get_data(
                 ow_start=None, row_end=None, col_start=None, col_end=None, mandatory=file_mandatory
@@ -77,10 +77,10 @@ class StaticHandler(IOWrapper):
             if row_start is not None and row_end is not None and col_start is not None and col_end is not None:
                 file_obj = file_obj.isel(latitude=slice(row_start, row_end), longitude=slice(col_start, col_end))
 
-        elif file_type == 'array':
-
+        elif 'array' == file_type:
             file_obj = driver_data.get_data(mandatory=file_mandatory)
-
+        elif 'point' in file_type:
+            file_obj = driver_data.get_data(mandatory=file_mandatory)
         else:
             raise ValueError(f'Type {file_type} not supported.')
 

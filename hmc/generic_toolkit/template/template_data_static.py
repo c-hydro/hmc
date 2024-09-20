@@ -1,3 +1,56 @@
+static_data_point = {
+  'section': {
+    'file_name': '{domain_name}.info_section.txt',
+    'file_mandatory': True,
+    'file_type': 'point_section',
+    'vars_constants': None,
+    'vars_no_data': None,
+    'vars_list': None,
+    'vars_tags': None,
+    'vars_mandatory': None
+  },
+  'lake': {
+    'file_name': '{domain_name}.info_lake.txt',
+    'file_mandatory': True,
+    'file_type': 'point_lake',
+    'vars_constants': None,
+    'vars_no_data': None,
+    'vars_list': None,
+    'vars_tags': None,
+    'vars_mandatory': None
+  },
+  'dam': {
+    'file_name': '{domain_name}.info_dam.txt',
+    'file_mandatory': True,
+    'file_type': 'point_dam',
+    'vars_constants': None,
+    'vars_no_data': None,
+    'vars_list': None,
+    'vars_tags': None,
+    'vars_mandatory': None
+  },
+  'joint': {
+    'file_name': '{domain_name}.info_joint.txt',
+    'file_mandatory': True,
+    'file_type': 'point_joint',
+    'vars_constants': None,
+    'vars_no_data': None,
+    'vars_list': None,
+    'vars_tags': None,
+    'vars_mandatory': None
+  },
+  'intake': {
+    'file_name': '{domain_name}.info_intake.txt',
+    'file_mandatory': True,
+    'file_type': 'point_intake',
+    'vars_constants': None,
+    'vars_no_data': None,
+    'vars_list': None,
+    'vars_tags': None,
+    'vars_mandatory': None
+  }
+}
+
 static_data_grid = {
   "terrain": {
     "file_name": "{domain_name}.dem.txt",

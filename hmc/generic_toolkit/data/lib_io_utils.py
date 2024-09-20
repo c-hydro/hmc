@@ -19,6 +19,27 @@ from hmc.generic_toolkit.default.lib_default_generic import tags_date_conversion
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+# -------------------------------------------------------------------------------------
+# Method to parse complex row to string
+def parse_row2str(row_obj, row_delimiter='#'):
+
+    # Check if line starts with {number}######
+    if row_obj.count(row_delimiter) > 1:
+        pattern = r'[0-9]'
+        row_obj = re.sub(pattern, '', row_obj)
+
+    row_string = row_obj.split(row_delimiter)[0]
+
+    # Check delimiter character (in intake file info there are both '#' and '%')
+    if ('#' not in row_obj) and ('%' in row_string):
+        row_string = row_obj.split('%')[0]
+
+    row_string = row_string.strip()
+
+    return row_string
+# -------------------------------------------------------------------------------------
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # method to substitute string by tags
 def substitute_string_by_tags(string: str, tags: dict = {}) -> str:

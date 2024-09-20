@@ -116,8 +116,9 @@ def hmc_main():
         obj_namelist=namelist_obj,
         obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
         obj_reference=reference_static_obj_terrain)
-    # method to organize static data
-    data_geo_grid, data_geo_array = driver_data_static.organize_data(namelist_data_static_obj, namelist_tags_obj)
+    # method to organize static data (point, grid, array)
+    data_geo_point, data_geo_grid, data_geo_array = driver_data_static.organize_data(
+        namelist_data_static_obj, namelist_tags_obj)
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -180,12 +181,12 @@ def hmc_main():
     # info algorithm (end)
     alg_time_elapsed = round(time.time() - start_time, 1)
 
-    alg_logger.info(' ')
-    alg_logger.info(' ==> ' + alg_name + ' (Version: ' + alg_version + ' Release_Date: ' + alg_release + ')')
-    alg_logger.info(' ==> TIME ELAPSED: ' + str(alg_time_elapsed) + ' seconds')
-    alg_logger.info(' ==> ... END')
-    alg_logger.info(' ==> Bye, Bye')
-    alg_logger.info(' ============================================================================ ')
+    logger_obj.info(' ')
+    logger_obj.info(' ==> ' + alg_name + ' (Version: ' + alg_version + ' Release_Date: ' + alg_release + ')')
+    logger_obj.info(' ==> TIME ELAPSED: ' + str(alg_time_elapsed) + ' seconds')
+    logger_obj.info(' ==> ... END')
+    logger_obj.info(' ==> Bye, Bye')
+    logger_obj.info(' ============================================================================ ')
     # ------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------

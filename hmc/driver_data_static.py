@@ -33,15 +33,18 @@ class StaticDriver(IOHandler):
     # method to organize data
     def organize_data(self, data_collections: dict, data_template: dict):
 
-        static_collections = {**data_collections.static_data_grid, **data_collections.static_data_array}
+        static_collections = {
+            **data_collections.static_data_point, **data_collections.static_data_grid,
+            **data_collections.static_data_array}
+
         static_tags = data_template.tags_string
+
+        folder_name_point, folder_name_grid, folder_name_array = self.__select_folder_by_type(
+            tag_point='path_data_static_point', tag_grid='path_data_static_grid', tag_array='path_data_static_grid')
 
         string_tags = map_tags(self.obj_tags, static_tags)
 
-        folder_name = self.obj_namelist_settings['path_data_static_grid']
-        folder_name = substitute_string_by_tags(folder_name, string_tags)
-
-        file_collections_grid, file_collections_array = None, None
+        file_collections_point, file_collections_grid, file_collections_array = None, None, None
         for file_key, file_collections in static_collections.items():
 
             file_name = file_collections['file_name']
@@ -49,6 +52,15 @@ class StaticDriver(IOHandler):
             file_type = file_collections['file_type']
             vars_constants = file_collections['vars_constants']
             vars_no_data = file_collections['vars_no_data']
+
+            if 'raster' == file_type:
+                folder_name = folder_name_grid
+            elif 'array' == file_type:
+                folder_name = folder_name_array
+            elif 'point' in file_type:
+                folder_name = folder_name_point
+            else:
+                raise ValueError(f'Type {file_type} not supported')
 
             folder_name = substitute_string_by_tags(folder_name, string_tags)
             file_name = substitute_string_by_tags(file_name, string_tags)
@@ -60,7 +72,7 @@ class StaticDriver(IOHandler):
                 file_type=file_type,
                 row_start=None, row_end=None, col_start=None, col_end=None)
 
-            if file_type == 'raster':
+            if 'raster' == file_type:
 
                 if obj_data is None:
                     obj_data = initialize_data_by_reference(da_reference=self.obj_reference, default_value=vars_no_data)
@@ -68,7 +80,7 @@ class StaticDriver(IOHandler):
                 if vars_constants is not None:
                     if vars_constants in list(self.obj_namelist_parameters.keys()):
                         var_constant_value = self.obj_namelist_parameters[vars_constants]
-                        grid_da = initialize_data_by_constant(
+                        obj_data = initialize_data_by_constant(
                             da_other=obj_data, da_reference=self.obj_reference,
                             condition_method='<', condition_value=0,
                             constant_value=var_constant_value)
@@ -83,19 +95,44 @@ class StaticDriver(IOHandler):
 
                 file_collections_grid[file_key] = obj_data
 
-            elif file_type == 'array':
+            elif 'array' == file_type:
 
                 if file_collections_array is None:
                     file_collections_array = {}
 
                 file_collections_array[file_key] = obj_data
 
+            elif 'point' in file_type:
+
+                if file_collections_point is None:
+                    file_collections_point = {}
+
+                file_collections_point[file_key] = obj_data
+
             else:
                 raise ValueError(f'Type {file_type} not supported.')
 
-        return file_collections_grid, file_collections_array
-# ----------------------------------------------------------------------------------------------------------------------
+        return file_collections_point, file_collections_grid, file_collections_array,
 
+    def __select_folder_by_type(self,
+                                tag_grid: str = 'path_data_static_grid', tag_point: str = 'path_data_static_point',
+                                tag_array: str = 'path_data_static_grid'):
+
+        if tag_grid in list(self.obj_namelist_settings.keys()):
+            folder_name_grid = self.obj_namelist_settings[tag_grid]
+        else:
+            raise ValueError(f'Tag {tag_grid} not found in namelist settings.')
+        if tag_point in list(self.obj_namelist_settings.keys()):
+            folder_name_point = self.obj_namelist_settings[tag_point]
+        else:
+            raise ValueError(f'Tag {tag_point} not found in namelist settings.')
+        if tag_array in list(self.obj_namelist_settings.keys()):
+            folder_name_array = self.obj_namelist_settings[tag_array]
+        else:
+            raise ValueError(f'Tag {tag_array} not found in namelist settings.')
+
+        return folder_name_point, folder_name_grid, folder_name_array
+# ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
 # method to map tags data to template

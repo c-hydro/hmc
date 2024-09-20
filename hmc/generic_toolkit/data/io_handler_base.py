@@ -6,8 +6,10 @@ from datetime import datetime
 import numpy as np
 import xarray as xr
 
-from hmc.generic_toolkit.data.lib_io_ascii import get_file_grid as get_file_grid_ascii
-from hmc.generic_toolkit.data.lib_io_ascii import get_file_array as get_file_array_ascii
+from hmc.generic_toolkit.data.lib_io_ascii_grid import get_file_grid as get_file_grid_ascii
+from hmc.generic_toolkit.data.lib_io_ascii_array import get_file_array as get_file_array_ascii
+from hmc.generic_toolkit.data.lib_io_ascii_point import (
+    get_file_point_section, get_file_point_lake, get_file_point_dam, get_file_point_joint, get_file_point_intake)
 from hmc.generic_toolkit.data.lib_io_tiff import get_file_grid as get_file_grid_tiff
 from hmc.generic_toolkit.data.lib_io_nc import get_file_grid as get_file_grid_nc
 
@@ -17,8 +19,15 @@ import matplotlib.pylab as plt
 class IOHandler:
 
     type_class = 'io_base'
-    type_data_grid = {'ascii': get_file_grid_ascii, 'tiff': get_file_grid_tiff, 'netCDF': get_file_grid_nc}
-    type_data_array = {'ascii': get_file_array_ascii}
+    type_data_grid = {
+        'ascii_raster': get_file_grid_ascii, 'tiff_raster': get_file_grid_tiff, 'netCDF_raster': get_file_grid_nc}
+    type_data_array = {
+        'ascii_array': get_file_array_ascii}
+    type_data_point = {
+        'ascii_point_section': get_file_point_section, 'ascii_point_lake': get_file_point_lake,
+        'ascii_point_dam': get_file_point_dam, 'ascii_point_joint': get_file_point_joint,
+        'ascii_point_intake': get_file_point_intake
+    }
 
     def __init__(self, folder_name: str, file_name: str,
                  file_type: str = 'raster',
@@ -42,14 +51,40 @@ class IOHandler:
         else:
             raise ValueError(f'Format {self.file_format} not supported.')
 
-        if self.file_type == 'raster':
-            self.fx_data = self.type_data_grid.get(self.file_format, self.error_data)
-        elif self.file_type == 'array':
-            self.fx_data = self.type_data_array.get(self.file_format, self.error_data)
+        if 'raster' in self.file_type:
+            if self.file_format == 'ascii' or self.file_format == 'netCDF':
+
+                if self.file_format not in self.file_type:
+                    self.file_type = self.__compose_type(self.file_type, self.file_format)
+
+                self.fx_data = self.type_data_grid.get(self.file_type, self.error_data)
+            else:
+                raise ValueError(f'Format {self.file_format} not supported for type {self.file_type}.')
+        elif 'array' in self.file_type:
+            if self.file_format == 'ascii':
+
+                if self.file_format not in self.file_type:
+                    self.file_type = self.__compose_type(self.file_type, self.file_format)
+
+                self.fx_data = self.type_data_array.get(self.file_type, self.error_data)
+            else:
+                raise ValueError(f'Format {self.file_format} not supported for type {self.file_type}.')
+        elif 'point' in self.file_type:
+            if self.file_format == 'ascii':
+
+                if self.file_format not in self.file_type:
+                    self.file_type = self.__compose_type(self.file_type, self.file_format)
+
+                self.fx_data = self.type_data_point.get(self.file_type, self.error_data)
+            else:
+                raise ValueError(f'Format {self.file_format} not supported for type {self.file_type}.')
         else:
             raise ValueError(f'Type {self.file_type} not supported.')
         self.vars_list = vars_list
         self.vars_mapping = vars_mapping
+
+    def __compose_type(self, file_type: str, file_format: str) -> str:
+        return f'{file_format}_{file_type}'
 
     @classmethod
     def from_path(cls, path: str, format: Optional[None] = None, **kwargs):
@@ -75,7 +110,6 @@ class IOHandler:
             obj_data = None
 
         return obj_data
-
 
     def adjust_data(self, obj_data: xr.Dataset, type_data='netcdf_v1') -> xr.Dataset:
         obj_data = self.filter_data(obj_data)
