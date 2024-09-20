@@ -10,6 +10,7 @@ Version:       '1.0.0'
 # ----------------------------------------------------------------------------------------------------------------------
 # libraries
 import logging
+import re
 from datetime import datetime
 
 import pandas as pd

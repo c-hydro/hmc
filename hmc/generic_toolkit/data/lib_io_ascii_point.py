@@ -1,7 +1,11 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # libraries
 import logging
+import warnings
 import pandas as pd
+
+from collections import OrderedDict
+from copy import deepcopy
 
 from hmc.generic_toolkit.data.lib_io_utils import parse_row2str
 # ----------------------------------------------------------------------------------------------------------------------
@@ -9,7 +13,7 @@ from hmc.generic_toolkit.data.lib_io_utils import parse_row2str
 
 # ----------------------------------------------------------------------------------------------------------------------
 # method to read point data section(s)
-def get_file_point_section(file_name: str, columns_name: list = None) -> pd.DataFrame:
+def get_file_point_section(file_name: str, columns_name: list = None) -> (pd.DataFrame, dict):
 
     if columns_name is None:
         columns_name = ['x', 'y', 'catchment', 'section', 'code', 'area', 'thr_1', 'thr_2']
@@ -25,13 +29,16 @@ def get_file_point_section(file_name: str, columns_name: list = None) -> pd.Data
     if columns_name is None:
         columns_name = ['index', 'values']
     file_data.columns = columns_name
-    return file_data
+
+    file_dims = {'section': len(file_data.index)}
+
+    return file_data, file_dims
 # ----------------------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------
 # method to read point data dam(s)
-def get_file_point_dam(file_name: str, line_delimiter: str = '#'):
+def get_file_point_dam(file_name: str, line_delimiter: str = '#') -> (dict, dict):
 
     file_handle = open(file_name, 'r')
     file_lines = file_handle.readlines()
@@ -112,14 +119,12 @@ def get_file_point_dam(file_name: str, line_delimiter: str = '#'):
                     point_frame[dam_key]['plant_discharge_max'] = plant_discharge_max
                     point_frame[dam_key]['plant_discharge_flag'] = plant_discharge_flag
                 else:
-                    log_stream.error(' ===> Dam name "' + dam_key + '" is already saved in the obj structure ')
                     raise IOError('Key value must be different for adding it in the dam object')
 
     else:
-
-        log_stream.warning(' ===> File info for dams was found; dams are equal to zero. Datasets is None')
-        log_stream.warning(' ===> Filename ' + os.path.split(file_name)[1])
+        warnings.warn(f'File info "{file_name}" for dam(s) was found; dam(s) are equal to zero. Datasets is None')
         point_frame = None
+        dam_n, plant_n = 0, 0
 
     if point_frame is not None:
         point_frame_reorder, point_frame_root = {}, []
@@ -155,9 +160,7 @@ def get_file_point_dam(file_name: str, line_delimiter: str = '#'):
                         elif isinstance(root_data, list):
                             tmp_data = [root_data, point_data]
                         else:
-                            log_stream.warning(
-                                ' ===> Type of key "' + point_tag +
-                                '" is not implemented yet for dam merged object')
+                            warnings.warn(f'Type of key "{point_tag}" is not implemented yet for dam merged object')
 
                         point_value_joined[point_tag] = tmp_data
                     else:
@@ -168,13 +171,15 @@ def get_file_point_dam(file_name: str, line_delimiter: str = '#'):
 
         point_frame = deepcopy(point_frame_reorder)
 
-    return point_frame
+    point_dims = {'dam': dam_n, 'plant': plant_n}
+
+    return point_frame, point_dims
 # -------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------
 # method to read point data intake(s)
-def get_file_point_intake(file_name, line_delimiter='#'):
+def get_file_point_intake(file_name: str, line_delimiter: str = '#') -> (dict, dict):
 
     file_handle = open(file_name, 'r')
     file_lines = file_handle.readlines()
@@ -226,18 +231,19 @@ def get_file_point_intake(file_name, line_delimiter='#'):
                 point_frame[release_key]['catch_discharge_weight'] = catch_discharge_weight
 
     else:
-
-        log_stream.warning(' ===> File info for intakes was found; intakes are equal to zero. Datasets is None')
-        log_stream.warning(' ===> Filename ' + os.path.split(file_name)[1])
+        warnings.warn(f'File info "{file_name}" for intake(s) was found; intake(s) are equal to zero. Datasets is None')
         point_frame = None
+        catch_n, release_n = 0, 0
 
-    return point_frame
+    point_dims = {'catch': catch_n, 'release': release_n}
+
+    return point_frame, point_dims
 # -------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------
 # method to read point data joint(s)
-def get_file_point_joint(file_name, line_delimiter='#'):
+def get_file_point_joint(file_name: str, line_delimiter: str = '#') -> (dict, None):
 
     file_handle = open(file_name, 'r')
     file_lines = file_handle.readlines()
@@ -247,21 +253,21 @@ def get_file_point_joint(file_name, line_delimiter='#'):
     joint_n = int(file_lines[row_id].split(line_delimiter)[0])
 
     if joint_n > 0:
-        log_stream.error(' ===> File info for joints was found; function to read joints is not implemented')
-        raise NotImplementedError(' ===> Method is not implemented yet')
+        raise NotImplemented(' File info for joint was found; function to read joints is not implemented')
     else:
-        log_stream.warning(' ===> File info for joints was found; joints are equal to zero. Datasets is None')
-        log_stream.warning(' ===> Filename ' + os.path.split(file_name)[1])
+        warnings.warn(f'File info "{file_name}" for joint(s) was found; joint(s) are equal to zero. Datasets is None')
         point_frame = None
 
-    return point_frame
+    point_dims = {'joint': joint_n}
+
+    return point_frame, point_dims
 
 # -------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------
 # method to read point data lake(s)
-def get_file_point_lake(file_name, line_delimiter='#'):
+def get_file_point_lake(file_name: str, line_delimiter: str = '#'):
 
     file_handle = open(file_name, 'r')
     file_lines = file_handle.readlines()
@@ -300,10 +306,11 @@ def get_file_point_lake(file_name, line_delimiter='#'):
             point_frame[lake_key]['lake_constant_draining'] = lake_const_draining
 
     else:
-
-        log_stream.warning(' ===> File info for lakes was found; lakes are equal to zero. Datasets is None')
-        log_stream.warning(' ===> Filename ' + os.path.split(file_name)[1])
+        warnings.warn('File info "' + file_name + '" for lake(s) was found; lake(s) are equal to zero. Datasets is None')
         point_frame = None
+        lake_n = 0
 
-    return point_frame
+    point_dims = {'lake': lake_n}
+
+    return point_frame, point_dims
 # -------------------------------------------------------------------------------------

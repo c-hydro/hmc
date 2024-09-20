@@ -67,43 +67,40 @@ def hmc_main():
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
-    # method to define info static handler
-    info_handler = info_handler_base.InfoHandler.organize_file_obj(
+    # method to define static grid dimension(s)
+    info_dims_data_static_grid = info_handler_base.InfoHandler.get_data_dims_by_file(
         folder_name=namelist_obj['settings']['path_data_static_grid'], file_name='{domain_name}.dem.txt',
-        file_tags={'domain_name':  namelist_obj['parameters']['domain_name']},
-        file_template=namelist_tags_obj.tags_string)
-    reference_static_obj_terrain = info_handler.get_file_info()
+        file_tags_definitions={'domain_name':  namelist_obj['parameters']['domain_name']},
+        file_tags_pattern=namelist_tags_obj.tags_string, file_type='raster')
 
-    info_handler = info_handler_base.InfoHandler.organize_file_obj(
-        folder_name=namelist_obj['settings']['path_data_static_grid'], file_name='{domain_name}.areacell.txt',
-        file_tags={'domain_name':  namelist_obj['parameters']['domain_name']},
-        file_template=namelist_tags_obj.tags_string)
-    # define reference static object
-    reference_static_obj_cell_area = info_handler.get_file_info()
+    # method to define static point dimension(s)
+    info_dims_data_static_point = info_handler_base.InfoHandler.get_data_dims_by_template(
+        folder_name=namelist_obj['settings']['path_data_static_point'],
+        file_tags_definitions={'domain_name':  namelist_obj['parameters']['domain_name']},
+        file_tags_pattern=namelist_tags_obj.tags_string,
+        file_template=namelist_data_static_obj.static_data_point)
 
-    # method to define info dynamic handler
-    info_handler = info_handler_base.InfoHandler.organize_file_obj(
+    # method to define dynamic grid dimension(s)
+    info_dims_data_dynamic_grid = info_handler_base.InfoHandler.get_data_dims_by_file(
         folder_name=namelist_obj['settings']['path_data_dynamic_src_grid'],
         file_name='hmc.forcing-grid.{datetime_dynamic_src_grid}.nc.gz',
         file_time=namelist_obj['settings']['time_start'],
-        file_tags={'domain_name': namelist_obj['parameters']['domain_name']},
-        file_template={**namelist_tags_obj.tags_string, **namelist_tags_obj.tags_time})
-    # define reference dynamic object
-    reference_dynamic_obj = info_handler.get_file_info()
+        file_tags_definitions={'domain_name': namelist_obj['parameters']['domain_name']},
+        file_tags_pattern={**namelist_tags_obj.tags_string, **namelist_tags_obj.tags_time})
 
-    # define reference time object
-    info_handler = info_handler_base.InfoHandler.organize_file_obj(
+    # method to define time dimension(s)
+    info_dims_time = info_handler_base.InfoHandler.get_time_dims_by_file(
         folder_name=namelist_obj['settings']['path_data_static_grid'], file_name='{domain_name}.areacell.txt',
-        file_tags={'domain_name':  namelist_obj['parameters']['domain_name']},
-        file_template=namelist_tags_obj.tags_string)
-    reference_time_obj = info_handler.get_time_info(time_period_sim=namelist_obj['settings']['time_period'])
+        file_tags_definitions={'domain_name':  namelist_obj['parameters']['domain_name']},
+        file_tags_pattern=namelist_tags_obj.tags_string,
+        time_period_sim=namelist_obj['settings']['time_period'], time_deep_shift=2)
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
     # driver variables
     driver_variables = VariablesDriver(
         parameters=namelist_obj['parameters'],
-        da_reference=reference_static_obj_terrain, time_reference=reference_time_obj)
+        da_reference=info_dims_data_static_grid, time_reference=info_dims_time)
     vars_geo_generic, vars_geo_routing, vars_geo_horton, vars_geo_wt, vars_geo_lsm = driver_variables.allocate_variables_geo()
     vars_data_src = driver_variables.allocate_variables_data()
     (dset_phys_lsm, dset_phys_et, dset_phys_snow,
@@ -145,7 +142,7 @@ def hmc_main():
             driver_data_dynamic = DynamicDriver(
                 obj_namelist=namelist_obj,
                 obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
-                obj_reference=reference_static_obj_terrain)
+                obj_reference=reference_data_static_grid)
             # method to organize dynamic data
             dset_data_dynamic_src_obj = driver_data_dynamic.organize_data(
                 time_step, namelist_data_dynamic_obj, namelist_tags_obj)

@@ -31,7 +31,7 @@ static_data_point = {
   },
   'joint': {
     'file_name': '{domain_name}.info_joint.txt',
-    'file_mandatory': True,
+    'file_mandatory': False,
     'file_type': 'point_joint',
     'vars_constants': None,
     'vars_no_data': None,
@@ -41,7 +41,7 @@ static_data_point = {
   },
   'intake': {
     'file_name': '{domain_name}.info_intake.txt',
-    'file_mandatory': True,
+    'file_mandatory': False,
     'file_type': 'point_intake',
     'vars_constants': None,
     'vars_no_data': None,

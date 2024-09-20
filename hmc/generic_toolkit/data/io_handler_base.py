@@ -83,7 +83,8 @@ class IOHandler:
         self.vars_list = vars_list
         self.vars_mapping = vars_mapping
 
-    def __compose_type(self, file_type: str, file_format: str) -> str:
+    @staticmethod
+    def __compose_type(file_type: str, file_format: str) -> str:
         return f'{file_format}_{file_type}'
 
     @classmethod
