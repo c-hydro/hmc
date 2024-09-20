@@ -100,7 +100,9 @@ def hmc_main():
     # driver variables
     driver_variables = VariablesDriver(
         parameters=namelist_obj['parameters'],
-        da_reference=info_dims_data_static_grid, time_reference=info_dims_time)
+        time_dims=info_dims_time,
+        static_dims_point=info_dims_data_static_point, static_dims_grid=info_dims_data_static_grid,
+        dynamic_dims_grid=info_dims_data_dynamic_grid, dynamic_dims_point=None)
     vars_geo_generic, vars_geo_routing, vars_geo_horton, vars_geo_wt, vars_geo_lsm = driver_variables.allocate_variables_geo()
     vars_data_src = driver_variables.allocate_variables_data()
     (dset_phys_lsm, dset_phys_et, dset_phys_snow,

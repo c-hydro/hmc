@@ -13,13 +13,39 @@ from hmc.hydrological_toolkit.variables.lib_variable_utils import create_variabl
 # class to handle physics driver geo
 class VariablesDriver(object):
 
-    def __init__(self, parameters: dict, da_reference: xr.DataArray, time_reference: dict) -> None:
+    def __init__(self, parameters: dict,
+                 time_dims: dict,
+                 static_dims_grid: dict, static_dims_point: dict,
+                 dynamic_dims_grid: dict, dynamic_dims_point: dict = None,
+                 **kwargs) -> None:
 
         self.parameters = parameters
-        self.da_reference = da_reference
-        self.time_reference = time_reference
+        self.static_dims_grid = static_dims_grid
+        self.static_dims_point = static_dims_point
+        self.dynamic_dims_grid = dynamic_dims_grid
+        self.dynamic_dims_point = dynamic_dims_point
+        self.time_dims = time_dims
 
-        self.rows, self.cols = self.da_reference.shape
+        # get grid dimensions
+        self.rows, self.cols = self.static_dims_grid['rows'], self.static_dims_grid['cols']
+
+        # get point dimensions
+        self.sections_n = self.static_dims_point['section']
+        self.dam_n = self.static_dims_point['dam']
+        self.catch_n = self.static_dims_point['catch']
+        self.intake_n = self.static_dims_point['intake']
+        self.joint_n = self.static_dims_point['joint']
+        self.lake_n = self.static_dims_point['lake']
+        self.plant_n = self.static_dims_point['plant']
+        self.release_n = self.static_dims_point['release']
+
+        # get time steps variable(s)
+        self.time_steps_day = self.time_dims['time_steps_day']
+        self.time_step_marked = self.time_dims['time_steps_marked']
+
+        # initialize data array reference
+        data_reference = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+        self.da_reference = xr.DataArray()
 
     # method to get parameter value
     def get_param(self, parameter_name: str = None) -> (float, int):
@@ -58,10 +84,6 @@ class VariablesDriver(object):
 
     # method to allocate variables phys
     def allocate_variables_phys(self) -> (xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset):
-
-        # get time steps variable(s)
-        time_steps_day = self.time_reference['time_steps_day']
-        time_step_marked = self.time_reference['time_steps_marked']
 
         # allocate lsm variables
         var_lst = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
