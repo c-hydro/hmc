@@ -63,7 +63,7 @@ class GeoDriver(GeoHandler):
                                       da_reference=self.reference_grid,
                                       parameters=self.parameters)
         # method to organize and analyze data
-        dset_geo_tmp = driver_params.organize_data()
+        dset_geo_tmp = driver_params.organize_data(dset_geo_tmp)
 
         # method to update data
         dset_geo_generic = self.update_data(dset_geo_tmp, dset_geo_generic)
@@ -102,7 +102,11 @@ class GeoDriver(GeoHandler):
     def wrap_geo_horton(self, dset_geo_generic: xr.Dataset, dset_geo_horton: xr.Dataset) -> xr.Dataset:
 
         # method to initialize class
-        driver_horton = HortonHandler(da_reference=self.reference_grid, parameters=self.parameters)
+        driver_horton = HortonHandler(
+            da_s=dset_geo_generic['s'], da_cost_f=dset_geo_horton['cost_f'],
+            da_cf=dset_geo_generic['cf'], da_ct=dset_geo_generic['ct'], da_ct_wp=dset_geo_generic['ct_wp'],
+            da_reference=dset_geo_generic['mask'],
+            parameters=self.parameters, constants={})
         # method to organize and analyze data
         dset_geo_tmp = driver_horton.organize_data()
         # method to update data

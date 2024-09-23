@@ -107,8 +107,7 @@ def hmc_main():
         static_dims_point=info_dims_data_static_point, static_dims_grid=info_dims_data_static_grid,
         dynamic_dims_grid=info_dims_data_dynamic_grid, dynamic_dims_point=None)
     # allocate geographical variables
-    (dset_geo_generic, dset_geo_routing, dset_geo_horton,
-     dset_geo_wt, dset_geo_lsm) = driver_variables.allocate_variables_geo()
+    (dset_geo_generic, dset_geo_horton, dset_geo_wt, dset_geo_lsm) = driver_variables.allocate_variables_geo()
     # allocate data variables
     dset_data_src = driver_variables.allocate_variables_data()
     # allocate physics variables
@@ -154,12 +153,18 @@ def hmc_main():
 
             # driver dynamic data
             driver_data_dynamic = DynamicDriver(
-                obj_namelist=namelist_obj,
-                obj_tags={'domain_name': namelist_obj['parameters']['domain_name']},
-                obj_reference=info_reference_grid)
+                parameters=namelist_obj['parameters'], settings=namelist_obj['settings'],
+                folder_name=namelist_obj['settings']['path_data_dynamic_src_grid'], file_name=None,
+                reference_grid=info_reference_grid,
+                file_tags_definitions={'domain_name': namelist_obj['parameters']['domain_name']},
+                file_tags_pattern={
+                    **namelist_tags_obj.tags_string,
+                    **namelist_tags_obj.tags_time
+                },
+                file_template=namelist_data_dynamic_obj.dynamic_data_grid['dynamic_src_grid']
+                )
             # method to organize dynamic data
-            dset_data_dynamic_src_obj = driver_data_dynamic.organize_data(
-                time_step, namelist_data_dynamic_obj, namelist_tags_obj)
+            dset_data_dynamic_src_obj = driver_data_dynamic.organize_data(time_step)
 
             # driver physics
             driver_phys = PhysDriver(

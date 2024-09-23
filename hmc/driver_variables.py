@@ -181,23 +181,24 @@ class VariablesDriver(object):
         var_cell_area = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
         var_cn = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
         var_s = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=500.0)
-        # organize geo variables
-        obj_geo_data = {'terrain': var_terrain, 'fdir': var_fdir, 'cnet': var_cnet, 'mask': var_mask,
-                        'cell_area': var_cell_area,
-                        'cn': var_cn, 's': var_s}
 
-        # convert geo variables to xarray dataset
-        dset_geo_data = create_dset_from_dict(obj_geo_data, da_reference=self.reference_grid)
-
-        # initialize routing variables
         var_ct = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('ct'))
         var_cf = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('cf'))
         var_uc = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('uc'))
         var_uh = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=self.get_param('uh'))
-        # organize routing variables
-        obj_geo_routing = {'ct': var_ct, 'cf': var_cf, 'uc': var_uc, 'uh': var_uh}
-        # convert routing variables to xarray dataset
-        dset_geo_routing = create_dset_from_dict(obj_geo_routing, da_reference=self.reference_grid)
+
+        var_ct_wp = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=-9999.0)
+
+        # organize geo variables
+        obj_geo_generic = {
+            'terrain': var_terrain, 'fdir': var_fdir, 'cnet': var_cnet, 'mask': var_mask,
+            'area_cell': var_cell_area,
+            'curve_number': var_cn, 's': var_s,
+            'ct': var_ct, 'cf': var_cf, 'uc': var_uc, 'uh': var_uh,
+            'ct_wp': var_ct_wp}
+
+        # convert geo variables to xarray dataset
+        dset_geo_generic = create_dset_from_dict(obj_geo_generic, da_reference=self.reference_grid)
 
         # initialize horton variables
         var_c1 = create_variable_data(self.rows, self.cols, var_dtype='float32', var_default_value=0.0)
@@ -234,6 +235,6 @@ class VariablesDriver(object):
         # convert lsm variables to xarray dataset
         dset_geo_lsm = create_dset_from_dict(obj_geo_lsm, da_reference=self.reference_grid)
 
-        return dset_geo_data, dset_geo_routing, dset_geo_horton, dset_geo_wt, dset_geo_lsm
+        return dset_geo_generic, dset_geo_horton, dset_geo_wt, dset_geo_lsm
 
 # ----------------------------------------------------------------------------------------------------------------------

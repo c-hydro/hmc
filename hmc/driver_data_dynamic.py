@@ -20,16 +20,30 @@ from hmc.hydrological_toolkit.variables.lib_variable_attrs import fill_list_leng
 # class to handle static driver
 class DynamicDriver(IOHandler):
 
-    def __init__(self, obj_namelist: dict, obj_reference: xr.DataArray, obj_tags: {} = None) -> None:
+    def __init__(self, parameters: dict, settings: dict,
+                 folder_name: str, file_name: str = None,
+                 reference_grid: xr.DataArray = None,
+                 file_tags_definitions: dict = None, file_tags_pattern: dict = None,
+                 file_template: dict = None) -> None:
 
-        self.obj_namelist_parameters = obj_namelist['parameters']
-        self.obj_namelist_settings = obj_namelist['settings']
-        self.obj_reference = obj_reference
+        self.parameters = parameters
+        self.settings = settings
 
-        if obj_tags is None:
-            self.obt_tags = {}
+        self.folder_name = folder_name
+        self.file_name = file_name
+
+        self.reference_grid = reference_grid
+
+        if file_tags_definitions is None:
+            self.file_tags_definitions = {}
         else:
-            self.obj_tags = obj_tags
+            self.file_tags_definitions = file_tags_definitions
+        if file_tags_pattern is None:
+            self.file_tags_pattern = {}
+        else:
+            self.file_tags_pattern = file_tags_pattern
+
+        self.file_template = file_template
 
         self.obj_vars_keys = ['rain', 'airt', 'inc_rad', 'wind', 'rh', 'airp']
         self.obj_vars_data = ['Rain', 'AirTemperature', 'IncomingRadiation', 'Wind', 'RelativeHumidity', 'AirPressure']
@@ -39,30 +53,30 @@ class DynamicDriver(IOHandler):
         self.obj_vars_mode = dict(zip(self.obj_vars_keys, self.obj_vars_mandatory))
 
     # method to organize data
-    def organize_data(self, data_time: pd.Timestamp, data_collections: dict, data_template: dict):
+    def organize_data(self, data_time: pd.Timestamp):
 
-        dynamic_collections = data_collections.dynamic_data_grid['dynamic_src_grid']
-        dynamic_tags = {**data_template.tags_string, **data_template.tags_time}
+        string_tags = map_tags(self.file_tags_definitions, self.file_tags_pattern)
 
-        string_tags = map_tags(self.obj_tags, dynamic_tags)
-
-        folder_name = self.obj_namelist_settings['path_data_dynamic_src_grid']
-        file_name = dynamic_collections['file_name']
-        file_mandatory = dynamic_collections['file_mandatory']
-        file_type = dynamic_collections['file_type']
-        vars_constant = dynamic_collections['vars_constants']
-        vars_no_data = dynamic_collections['vars_no_data']
-        vars_list = dynamic_collections['vars_list']
-        vars_tags = dynamic_collections['vars_tags']
-        vars_mandatory = dynamic_collections['vars_mandatory']
+        folder_name = self.folder_name
+        if self.file_name is None:
+            file_name = self.file_template['file_name']
+        else:
+            file_name = self.file_name
+        file_mandatory = self.file_template['file_mandatory']
+        file_type = self.file_template['file_type']
+        vars_constant = self.file_template['vars_constants']
+        vars_no_data = self.file_template['vars_no_data']
+        vars_list = self.file_template['vars_list']
+        vars_tags = self.file_template['vars_tags']
+        vars_mandatory = self.file_template['vars_mandatory']
 
         vars_constant, vars_no_data, vars_list, vars_tags, vars_mandatory = fill_list_length(
             vars_constant, vars_no_data, vars_list, vars_tags, vars_mandatory, no_data=-9999.0)
 
         folder_name = substitute_string_by_tags(folder_name, string_tags)
-        folder_name = substitute_string_by_date(folder_name, data_time, dynamic_tags)
+        folder_name = substitute_string_by_date(folder_name, data_time, self.file_tags_pattern)
         file_name = substitute_string_by_tags(file_name, string_tags)
-        file_name = substitute_string_by_date(file_name, data_time, dynamic_tags)
+        file_name = substitute_string_by_date(file_name, data_time, self.file_tags_pattern)
 
         io_dynamic_src_grid_handler = DynamicSrcHandler.organize_file_data(
             folder_name=folder_name,
@@ -77,7 +91,7 @@ class DynamicDriver(IOHandler):
         file_dset = io_dynamic_src_grid_handler.adjust_file_data(file_dset)
         # fill data information
         file_dset = io_dynamic_src_grid_handler.fill_file_data(
-            file_dset, ref_data=self.obj_reference,
+            file_dset, ref_data=self.reference_grid,
             vars_tags=vars_tags, vars_mandatory=vars_mandatory, vars_no_data=vars_no_data)
 
         # mask data by reference

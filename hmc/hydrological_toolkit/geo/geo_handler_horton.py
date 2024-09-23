@@ -12,7 +12,7 @@ class HortonHandler(GeoHandler):
     def __init__(self, da_s: xr.DataArray, da_cost_f: xr.DataArray,
                  da_cf: xr.DataArray, da_ct: xr.DataArray, da_ct_wp: xr.DataArray,
                  da_reference: xr.DataArray,
-                 parameters: dict, constants: dict) -> None:
+                 parameters: dict, constants: dict = None) -> None:
 
         self.da_s = da_s
         self.da_cf = da_cf
@@ -25,10 +25,10 @@ class HortonHandler(GeoHandler):
         self.parameters = parameters
         self.constants = constants
 
-        self.cost_f1_tag = 'cost_f'
-        self.cost_ch_fix_tag = 'cost_ch_fix'
-        self.c1_tag = 'c1'
-        self.f2_tag = 'f2'
+        self.tag_cost_f1 = 'cost_f'
+        self.tag_cost_ch_fix = 'cost_ch_fix'
+        self.tag_c1 = 'c1'
+        self.tag_f2 = 'f2'
 
         super().__init__(da_data=da_reference, da_reference=da_reference)
 
@@ -55,6 +55,6 @@ class HortonHandler(GeoHandler):
         dset_data = self.add_data_list(
             da_data_list=[da_cost_f1, da_cost_ch_fix, da_c1, da_f2],
             dset_data=dset_data,
-            var_name_list=[self.cost_f1_tag, self.cost_ch_fix_tag, self.c1_tag, self.f2_tag])
+            var_name_list=[self.tag_cost_f1, self.tag_cost_ch_fix, self.tag_c1, self.tag_f2])
 
         return dset_data

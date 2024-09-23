@@ -20,11 +20,11 @@ class LSMHandler(GeoHandler):
         self.parameters = parameters
         self.constants = constants
 
-        self.ct_wp_tag = 'ct_wp'
-        self.kb1_tag = 'kb_1'
-        self.kc1_tag = 'kc_1'
-        self.kb2_tag = 'kb_2'
-        self.kc2_tag = 'kc_2'
+        self.tag_ct_wp = 'ct_wp'
+        self.tag_kb1 = 'kb_1'
+        self.tag_kc1 = 'kc_1'
+        self.tag_kb2 = 'kb_2'
+        self.tag_kc2 = 'kc_2'
 
         super().__init__(da_data=da_reference, da_reference=da_reference)
 
@@ -55,6 +55,6 @@ class LSMHandler(GeoHandler):
         dset_data = self.add_data_list(
             da_data_list=[da_ct_wp, da_kb1, da_kc1, da_kb2, da_kc2],
             dset_data=dset_data,
-            var_name_list=[self.ct_wp_tag, self.kb1_tag, self.kc1_tag, self.kb2_tag, self.kc2_tag])
+            var_name_list=[self.tag_ct_wp, self.tag_kb1, self.tag_kc1, self.tag_kb2, self.tag_kc2])
 
         return dset_data
