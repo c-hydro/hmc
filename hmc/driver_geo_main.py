@@ -27,79 +27,99 @@ from hmc.hydrological_toolkit.variables.lib_variable_utils import extract_values
 class GeoDriver(GeoHandler):
 
     def __init__(self, static_data_grid: xr.Dataset, static_data_array: dict,
-                 ref_data_obj: xr.DataArray, parameters: dict) -> None:
+                 reference_grid: xr.DataArray, parameters: dict) -> None:
 
         self.static_data_grid = static_data_grid
         self.static_data_array = static_data_array
-        self.ref_data_obj = ref_data_obj
+        self.reference_grid = reference_grid
         self.parameters = parameters
 
-    # method to wrap physics routine(s)
-    def wrap_geo(self) -> (xr.Dataset, xr.Dataset):
+    # method to wrap geo generic
+    def wrap_geo_generic(self, dset_geo_generic: xr.Dataset) -> xr.Dataset:
 
         # initialize data grid
-        dset_geo = self.static_data_grid.copy()
+        dset_geo_tmp = self.static_data_grid.copy()
 
         # method to organize, analyze and save area cell object(s)
-        drv_geo_area_cell = AreaCellHandler.select_data(self.static_data_grid,  self.ref_data_obj, var_name='area_cell')
+        drv_geo_area_cell = AreaCellHandler.select_data(
+            self.static_data_grid,  self.reference_grid, var_name='area_cell')
         auxiliary_area_cell = drv_geo_area_cell.organize_auxiliary()
 
         # method to organize, analyze and save terrain object(s)
-        driver_geo_terrain = TerrainHandler.select_data(self.static_data_grid,  self.ref_data_obj, var_name='terrain')
+        driver_geo_terrain = TerrainHandler.select_data(
+            self.static_data_grid,  self.reference_grid, var_name='terrain')
         auxiliary_terrain = driver_geo_terrain.organize_auxiliary()
-        dset_geo = driver_geo_terrain.organize_data(dset_geo)
+        dset_geo_tmp = driver_geo_terrain.organize_data(dset_geo_tmp)
 
         # method to organize, analyze and save curve number object(s)
-        driver_cn = CNHandler.select_data(self.static_data_grid,  da_reference=dset_geo['mask'], var_name='curve_number')
-        dset_geo = driver_cn.organize_data(
-            dset_geo, veg_ia_data=extract_values_from_obj(self.static_data_array['vegetation_ia']))
+        driver_cn = CNHandler.select_data(
+            self.static_data_grid,  da_reference=dset_geo_tmp['mask'], var_name='curve_number')
+        dset_geo_tmp = driver_cn.organize_data(
+            dset_geo_tmp, veg_ia_data=extract_values_from_obj(self.static_data_array['vegetation_ia']))
 
-        # method to organize, analyze and save parameters object(s)
-        driver_params = ParamsHandler(da_ct=dset_geo['ct'], da_cf=dset_geo['cf'],
-                                      da_uc=dset_geo['uc'], da_uh=dset_geo['uh'], da_reference=self.ref_data_obj,
+        # method to initialize class
+        driver_params = ParamsHandler(da_ct=dset_geo_tmp['ct'], da_cf=dset_geo_tmp['cf'],
+                                      da_uc=dset_geo_tmp['uc'], da_uh=dset_geo_tmp['uh'],
+                                      da_reference=self.reference_grid,
                                       parameters=self.parameters)
-        dset_params = driver_params.organize_data()
+        # method to organize and analyze data
+        dset_geo_tmp = driver_params.organize_data()
+
+        # method to update data
+        dset_geo_generic = self.update_data(dset_geo_tmp, dset_geo_generic)
+
+        return dset_geo_generic
+
+    # method to wrap geo lsm
+    def wrap_geo_lsm(self, dset_geo_generic: xr.Dataset, dset_geo_lsm: xr.Dataset) -> xr.Dataset:
+
+        # method to initialize class
+        driver_lsm = LSMHandler(da_ct=dset_geo_generic['ct'], da_ct_wp=dset_geo_generic['ct_wp'],
+                                da_reference=self.reference_grid,
+                                constants=const_lsm, parameters=self.parameters)
+        # method to organize and analyze data
+        dset_geo_tmp = driver_lsm.organize_data()
+        # method to update data
+        dset_geo_lsm = self.update_data(dset_geo_lsm, dset_geo_tmp)
+
+        return dset_geo_lsm
+
+    # method to wrap volume parameters
+    def wrap_geo_volume(self, dset_geo_generic: xr.Dataset, dset_geo_volume: xr.Dataset) -> xr.Dataset:
 
         # method to organize, analyze and save volume object(s)
-        driver_volume = VolumeHandler(da_s=dset_geo['s'], da_terrain=dset_geo['terrain'], da_ct=dset_geo['ct'],
-                                      da_reference=dset_geo['mask'], parameters=self.parameters)
-        dset_volume = driver_volume.organize_data()
+        driver_volume = VolumeHandler(da_s=dset_geo_generic['s'],
+                                      da_terrain=dset_geo_generic['terrain'], da_ct=dset_geo_generic['ct'],
+                                      da_reference=dset_geo_generic['mask'], parameters=self.parameters)
+        # method to organize and analyze data
+        dset_geo_tmp = driver_volume.organize_data()
+        # method to update data
+        dset_geo_volume = self.update_data(dset_geo_volume, dset_geo_tmp)
 
-        # method to organize, analyze and save land surface model object(s)
-        driver_lsm = LSMHandler(da_ct=dset_geo['ct'], da_ct_wp=dset_geo['ct_wp'],  da_reference=self.ref_data_obj,
-                                constants=const_lsm, parameters=self.parameters)
+        return dset_geo_volume
 
-        dset_lsm = driver_lsm.organize_data()
+    # method to wrap geo horton
+    def wrap_geo_horton(self, dset_geo_generic: xr.Dataset, dset_geo_horton: xr.Dataset) -> xr.Dataset:
 
-        # method to organize, analyze and save horton object(s)
-        driver_horton = HortonHandler(da_s=dset_geo['s'], da_cost_f=dset_geo['cost_f'],
-                                      da_ct=dset_geo['ct'], da_cf=dset_geo['cf'], da_ct_wp=dset_lsm['ct_wp'],
-                                      da_reference=self.ref_data_obj,
-                                      constants=const_lsm, parameters=self.parameters)
-        dset_horton = driver_horton.organize_data()
+        # method to initialize class
+        driver_horton = HortonHandler(da_reference=self.reference_grid, parameters=self.parameters)
+        # method to organize and analyze data
+        dset_geo_tmp = driver_horton.organize_data()
+        # method to update data
+        dset_geo_horton = self.update_data(dset_geo_horton, dset_geo_tmp)
 
-        # method to organize, analyze and save surface object(s)
-        driver_surface = SurfaceHandler(da_uh=dset_geo['uh'], da_uc=dset_geo['uc'], da_reference=self.ref_data_obj,
-                                        parameters=self.parameters, constants=const_surface)
-        dset_surface = driver_surface.organize_data(**auxiliary_area_cell)
+        return dset_geo_horton
 
-        return dset_geo, dset_params, dset_volume, dset_lsm, dset_horton, dset_surface
+    # method to wrap geo surface
+    def wrap_geo_surface(self, dset_geo_generic: xr.Dataset, dset_geo_surface: xr.Dataset) -> xr.Dataset:
 
-    @staticmethod
-    def organize_geo(dset_data: xr.Dataset, dset_expected: xr.Dataset, drop_variables: bool = False) -> xr.Dataset:
+        # method to initialize class
+        driver_surface = SurfaceHandler(da_reference=self.reference_grid, parameters=self.parameters)
+        # method to organize and analyze data
+        dset_geo_tmp = driver_surface.organize_data()
+        # method to update data
+        dset_geo_surface = self.update_data(dset_geo_surface, dset_geo_tmp)
 
-        vars_expected = list(dset_expected.variables)
-        vars_dropped = []
-        for var_name in vars_expected:
-            if var_name in list(dset_data.variables):
-                dset_expected[var_name] = dset_data[var_name]
-            else:
-                vars_dropped.append(var_name)
-
-        if drop_variables:
-            dset_expected = dset_expected.drop_vars(vars_dropped)
-
-        return dset_expected
-    # ----------------------------------------------------------------------------------------------------------------------
-
+        return dset_geo_surface
 # ----------------------------------------------------------------------------------------------------------------------
+

@@ -93,6 +93,23 @@ class GeoHandler:
 
         return dset_default
 
+    # method to update data
+    @staticmethod
+    def update_data(dset_data: xr.Dataset, dset_expected: xr.Dataset, drop_variables: bool = False) -> xr.Dataset:
+
+        vars_expected = list(dset_expected.variables)
+        vars_dropped = []
+        for var_name in vars_expected:
+            if var_name in list(dset_data.variables):
+                dset_expected[var_name] = dset_data[var_name]
+            else:
+                vars_dropped.append(var_name)
+
+        if drop_variables:
+            dset_expected = dset_expected.drop_vars(vars_dropped)
+
+        return dset_expected
+
     # method to view data
     @staticmethod
     def view_data(obj_data: (np.ndarray, xr.DataArray, xr.Dataset),

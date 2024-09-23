@@ -19,33 +19,37 @@ from hmc.hydrological_toolkit.geo.lib_geo_utils import (
 # class to handle static driver
 class StaticDriver(IOHandler):
 
-    def __init__(self, obj_namelist: dict, obj_reference: xr.DataArray, obj_tags: {} = None) -> None:
+    def __init__(self,
+                 parameters: dict, settings: dict,
+                 reference_grid: xr.DataArray,
+                 file_tags_definitions: dict = None, file_tags_pattern: dict = None,
+                 file_template: dict = None) -> None:
 
-        self.obj_namelist_parameters = obj_namelist['parameters']
-        self.obj_namelist_settings = obj_namelist['settings']
-        self.obj_reference = obj_reference
+        self.parameters = parameters
+        self.settings = settings
+        self.reference_grid = reference_grid
 
-        if obj_tags is None:
-            self.obt_tags = {}
+        if file_tags_definitions is None:
+            self.file_tags_definitions = {}
         else:
-            self.obj_tags = obj_tags
+            self.file_tags_definitions = file_tags_definitions
+        if file_tags_pattern is None:
+            self.file_tags_pattern = {}
+        else:
+            self.file_tags_pattern = file_tags_pattern
+
+        self.file_template = file_template
 
     # method to organize data
-    def organize_data(self, data_collections: dict, data_template: dict):
-
-        static_collections = {
-            **data_collections.static_data_point, **data_collections.static_data_grid,
-            **data_collections.static_data_array}
-
-        static_tags = data_template.tags_string
+    def organize_data(self) -> tuple:
 
         folder_name_point, folder_name_grid, folder_name_array = self.__select_folder_by_type(
             tag_point='path_data_static_point', tag_grid='path_data_static_grid', tag_array='path_data_static_grid')
 
-        string_tags = map_tags(self.obj_tags, static_tags)
+        string_tags = map_tags(self.file_tags_definitions, self.file_tags_pattern)
 
         file_collections_point, file_collections_grid, file_collections_array = None, None, None
-        for file_key, file_collections in static_collections.items():
+        for file_key, file_collections in self.file_template.items():
 
             file_name = file_collections['file_name']
             file_mandatory = file_collections['file_mandatory']
@@ -75,38 +79,35 @@ class StaticDriver(IOHandler):
             if 'raster' == file_type:
 
                 if obj_data is None:
-                    obj_data = initialize_data_by_reference(da_reference=self.obj_reference, default_value=vars_no_data)
+                    obj_data = initialize_data_by_reference(da_reference=self.reference_grid, default_value=vars_no_data)
 
                 if vars_constants is not None:
-                    if vars_constants in list(self.obj_namelist_parameters.keys()):
-                        var_constant_value = self.obj_namelist_parameters[vars_constants]
+                    if vars_constants in list(self.parameters.keys()):
+                        var_constant_value = self.parameters[vars_constants]
                         obj_data = initialize_data_by_constant(
-                            da_other=obj_data, da_reference=self.obj_reference,
+                            da_other=obj_data, da_reference=self.reference_grid,
                             condition_method='<', condition_value=0,
                             constant_value=var_constant_value)
 
                 obj_data = mask_data_by_reference(
-                    obj_data, self.obj_reference, mask_method='==', mask_value=vars_no_data, mask_other=obj_data)
+                    obj_data, self.reference_grid, mask_method='==', mask_value=vars_no_data, mask_other=obj_data)
 
                 obj_data = mask_data_boundaries(obj_data, bounds_value=vars_no_data)
 
                 if file_collections_grid is None:
                     file_collections_grid = xr.Dataset()
-
                 file_collections_grid[file_key] = obj_data
 
             elif 'array' == file_type:
 
                 if file_collections_array is None:
                     file_collections_array = {}
-
                 file_collections_array[file_key] = obj_data
 
             elif 'point' in file_type:
 
                 if file_collections_point is None:
                     file_collections_point = {}
-
                 file_collections_point[file_key] = obj_data
 
             else:
@@ -118,21 +119,22 @@ class StaticDriver(IOHandler):
                                 tag_grid: str = 'path_data_static_grid', tag_point: str = 'path_data_static_point',
                                 tag_array: str = 'path_data_static_grid'):
 
-        if tag_grid in list(self.obj_namelist_settings.keys()):
-            folder_name_grid = self.obj_namelist_settings[tag_grid]
+        if tag_grid in list(self.settings.keys()):
+            folder_name_grid = self.settings[tag_grid]
         else:
             raise ValueError(f'Tag {tag_grid} not found in namelist settings.')
-        if tag_point in list(self.obj_namelist_settings.keys()):
-            folder_name_point = self.obj_namelist_settings[tag_point]
+        if tag_point in list(self.settings.keys()):
+            folder_name_point = self.settings[tag_point]
         else:
             raise ValueError(f'Tag {tag_point} not found in namelist settings.')
-        if tag_array in list(self.obj_namelist_settings.keys()):
-            folder_name_array = self.obj_namelist_settings[tag_array]
+        if tag_array in list(self.settings.keys()):
+            folder_name_array = self.settings[tag_array]
         else:
             raise ValueError(f'Tag {tag_array} not found in namelist settings.')
 
         return folder_name_point, folder_name_grid, folder_name_array
 # ----------------------------------------------------------------------------------------------------------------------
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # method to map tags data to template

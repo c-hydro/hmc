@@ -34,7 +34,6 @@ class IOWrapper(IOHandler):
 # class to handle information
 class InfoHandler(ZipWrapper, IOWrapper):
 
-    buffer_class = {}
     type_class = 'info_base'
 
     def __init__(self, folder_name: str, file_name: str,
@@ -63,10 +62,11 @@ class InfoHandler(ZipWrapper, IOWrapper):
 
     @classmethod
     def get_data_dims_by_file(cls,
-                          folder_name: str, file_name: str = '{domain_name}.dem.txt',
-                          file_time: pd.Timestamp = None,
-                          file_mandatory: bool = True, file_type: str = 'raster',
-                          file_tags_definitions: dict = None, file_tags_pattern: dict = None):
+                              folder_name: str, file_name: str = '{domain_name}.dem.txt',
+                              file_time: pd.Timestamp = None,
+                              file_mandatory: bool = True, file_type: str = 'raster',
+                              file_tags_definitions: dict = None, file_tags_pattern: dict = None,
+                              info_type: str = 'keep_data_and_dims'):
 
         if file_tags_pattern is None:
             file_tags_pattern = {}
@@ -84,32 +84,40 @@ class InfoHandler(ZipWrapper, IOWrapper):
                 raise FileNotFoundError(f'File {file_name} does not exist in path {folder_name}.')
 
         obj_class = cls(folder_name, file_name, file_mandatory, file_type)
-        obj_data = obj_class.get_file_info()
+        da_data = obj_class.get_file_info()
 
-        attrs_data = obj_data.attrs
+        attrs_data = da_data.attrs
 
-        geo_x = obj_data['longitude'].values
+        geo_x = da_data['longitude'].values
         if geo_x.shape.__len__() == 2:
             geo_x = geo_x[0, :]
-        geo_y = obj_data['latitude'].values
+        geo_y = da_data['latitude'].values
         if geo_y.shape.__len__() == 2:
             geo_y = geo_y[:, 0]
 
         attrs_data['cols'] = geo_x.shape[0]
         attrs_data['rows'] = geo_y.shape[0]
 
-        return attrs_data
+        if info_type == 'keep_data_and_dims':
+            return da_data, attrs_data
+        elif info_type == 'keep_dims':
+            return attrs_data
+        elif info_type == 'keep_data':
+            return da_data
+        else:
+            raise ValueError(f'Info type {info_type} not supported.')
 
     @classmethod
     def get_data_dims_by_template(cls,
                                   folder_name: str,
                                   file_time: pd.Timestamp = None,
                                   file_tags_definitions: dict = None, file_tags_pattern: dict = None,
-                                  file_template: dict = None):
+                                  file_template: dict = None,
+                                  info_type: str = 'keep_data_and_dims'):
 
         folder_name = substitute_string_by_date(folder_name, file_time, file_tags_pattern)
 
-        attrs_data = {}
+        obj_data, obj_attrs = {}, {}
         for file_tag, file_settings in file_template.items():
 
             file_mandatory = file_settings['file_mandatory']
@@ -119,11 +127,19 @@ class InfoHandler(ZipWrapper, IOWrapper):
             file_name = substitute_string_by_tags(file_name, file_tags_definitions)
 
             class_obj = cls(folder_name, file_name, file_mandatory, file_type)
-            attrs_dims = class_obj.get_file_info()[1]
+            file_data, file_dims = class_obj.get_file_info()
 
-            attrs_data = {**attrs_data, **attrs_dims}
+            obj_data[file_tag] = file_data
+            obj_attrs = {**obj_attrs, **file_dims}
 
-        return attrs_data
+        if info_type == 'keep_data_and_dims':
+            return obj_data, obj_attrs
+        elif info_type == 'keep_dims':
+            return obj_attrs
+        elif info_type == 'keep_data':
+            return obj_data
+        else:
+            raise ValueError(f'Info type {info_type} not supported.')
 
     # method to get file information
     def get_file_info(self):
@@ -141,11 +157,11 @@ class InfoHandler(ZipWrapper, IOWrapper):
 
     @classmethod
     def get_time_dims_by_file(cls,
-                          folder_name: str, file_name: str = '{domain_name}.dem.txt',
-                          file_time: pd.Timestamp = None,
-                          file_mandatory: bool = True, file_type: str = 'raster',
-                          file_tags_definitions: dict = None, file_tags_pattern: dict = None,
-                          time_period_sim: int = 24, time_deep_shift: int = 2):
+                              folder_name: str, file_name: str = '{domain_name}.dem.txt',
+                              file_time: pd.Timestamp = None,
+                              file_mandatory: bool = True, file_type: str = 'raster',
+                              file_tags_definitions: dict = None, file_tags_pattern: dict = None,
+                              time_period_sim: int = 24, time_deep_shift: int = 2):
 
         if file_tags_pattern is None:
             file_tags_pattern = {}

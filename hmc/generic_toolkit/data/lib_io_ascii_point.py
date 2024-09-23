@@ -38,7 +38,7 @@ def get_file_point_section(file_name: str, columns_name: list = None) -> (pd.Dat
 
 # -------------------------------------------------------------------------------------
 # method to read point data dam(s)
-def get_file_point_dam(file_name: str, line_delimiter: str = '#') -> (dict, dict):
+def get_file_point_dam(file_name: str, line_delimiter: str = '#', line_reorder: bool = False) -> (dict, dict):
 
     file_handle = open(file_name, 'r')
     file_lines = file_handle.readlines()
@@ -127,53 +127,61 @@ def get_file_point_dam(file_name: str, line_delimiter: str = '#') -> (dict, dict
         dam_n, plant_n = 0, 0
 
     if point_frame is not None:
-        point_frame_reorder, point_frame_root = {}, []
-        for point_key, point_fields in point_frame.items():
+        if line_reorder:
+            point_frame_reorder, point_frame_root = {}, []
+            for point_key, point_fields in point_frame.items():
 
-            point_name_root, point_name_other = point_key.split(':')
+                point_name_root, point_name_other = point_key.split(':')
 
-            if point_name_root not in point_frame_root:
-                point_frame_reorder[point_key] = point_fields
-                point_frame_root.append(point_name_root)
-            else:
-                point_idx_root = point_frame_root.index(point_name_root)
+                if point_name_root not in point_frame_root:
+                    point_frame_reorder[point_key] = point_fields
+                    point_frame_root.append(point_name_root)
+                else:
+                    point_idx_root = point_frame_root.index(point_name_root)
 
-                point_key_root = list(point_frame_reorder.keys())[point_idx_root]
-                point_values_root = point_frame_reorder[point_key_root]
+                    point_key_root = list(point_frame_reorder.keys())[point_idx_root]
+                    point_values_root = point_frame_reorder[point_key_root]
 
-                point_key_tmp, point_other_tmp = point_key_root.split(':')
-                point_other_joined = '_'.join([point_other_tmp, point_name_other])
-                point_key_joined = ':'.join([point_key_tmp, point_other_joined])
+                    point_key_tmp, point_other_tmp = point_key_root.split(':')
+                    point_other_joined = '_'.join([point_other_tmp, point_name_other])
+                    point_key_joined = ':'.join([point_key_tmp, point_other_joined])
 
-                point_value_joined = {}
-                for point_tag, point_data in point_fields.items():
-                    if point_tag in list(point_values_root.keys()):
+                    point_value_joined = {}
+                    for point_tag, point_data in point_fields.items():
+                        if point_tag in list(point_values_root.keys()):
 
-                        root_data = point_values_root[point_tag]
+                            root_data = point_values_root[point_tag]
 
-                        if isinstance(root_data, float):
-                            tmp_data = [root_data, point_data]
-                        elif isinstance(root_data, int):
-                            tmp_data = [root_data, point_data]
-                        elif isinstance(root_data, str):
-                            tmp_data = [root_data, point_data]
-                        elif isinstance(root_data, list):
-                            tmp_data = [root_data, point_data]
+                            if isinstance(root_data, float):
+                                tmp_data = [root_data, point_data]
+                            elif isinstance(root_data, int):
+                                tmp_data = [root_data, point_data]
+                            elif isinstance(root_data, str):
+                                tmp_data = [root_data, point_data]
+                            elif isinstance(root_data, list):
+                                tmp_data = [root_data, point_data]
+                            else:
+                                warnings.warn(f'Type of key "{point_tag}" is not implemented yet for dam merged object')
+
+                            point_value_joined[point_tag] = tmp_data
                         else:
-                            warnings.warn(f'Type of key "{point_tag}" is not implemented yet for dam merged object')
+                            point_value_joined[point_tag] = point_data
 
-                        point_value_joined[point_tag] = tmp_data
-                    else:
-                        point_value_joined[point_tag] = point_data
+                    point_frame_reorder[point_key_joined] = point_value_joined
+                    point_frame_reorder.pop(point_key_root)
 
-                point_frame_reorder[point_key_joined] = point_value_joined
-                point_frame_reorder.pop(point_key_root)
+            point_frame = deepcopy(point_frame_reorder)
 
-        point_frame = deepcopy(point_frame_reorder)
+        # convert to dataframe
+        index_df, data_df = list(point_frame.keys()), point_frame.values()
+        point_dframe = pd.DataFrame(data_df, index=index_df)
+
+    else:
+        point_dframe = None
 
     point_dims = {'dam': dam_n, 'plant': plant_n}
 
-    return point_frame, point_dims
+    return point_dframe, point_dims
 # -------------------------------------------------------------------------------------
 
 
@@ -230,14 +238,18 @@ def get_file_point_intake(file_name: str, line_delimiter: str = '#') -> (dict, d
                 point_frame[release_key]['catch_discharge_min'] = catch_discharge_min
                 point_frame[release_key]['catch_discharge_weight'] = catch_discharge_weight
 
+        # convert to dataframe
+        index_df, data_df = list(point_frame.keys()), point_frame.values()
+        point_dframe = pd.DataFrame(data_df, index=index_df)
+
     else:
         warnings.warn(f'File info "{file_name}" for intake(s) was found; intake(s) are equal to zero. Datasets is None')
-        point_frame = None
+        point_dframe = None
         catch_n, release_n = 0, 0
 
     point_dims = {'catch': catch_n, 'release': release_n}
 
-    return point_frame, point_dims
+    return point_dframe, point_dims
 # -------------------------------------------------------------------------------------
 
 
@@ -256,11 +268,11 @@ def get_file_point_joint(file_name: str, line_delimiter: str = '#') -> (dict, No
         raise NotImplemented(' File info for joint was found; function to read joints is not implemented')
     else:
         warnings.warn(f'File info "{file_name}" for joint(s) was found; joint(s) are equal to zero. Datasets is None')
-        point_frame = None
+        point_dframe = None
 
     point_dims = {'joint': joint_n}
 
-    return point_frame, point_dims
+    return point_dframe, point_dims
 
 # -------------------------------------------------------------------------------------
 
@@ -305,12 +317,16 @@ def get_file_point_lake(file_name: str, line_delimiter: str = '#'):
             point_frame[lake_key]['lake_volume_init'] = lake_volume_init
             point_frame[lake_key]['lake_constant_draining'] = lake_const_draining
 
+        # convert to dataframe
+        index_df, data_df = list(point_frame.keys()), point_frame.values()
+        point_dframe = pd.DataFrame(data_df, index=index_df)
+
     else:
         warnings.warn('File info "' + file_name + '" for lake(s) was found; lake(s) are equal to zero. Datasets is None')
-        point_frame = None
+        point_dframe = None
         lake_n = 0
 
     point_dims = {'lake': lake_n}
 
-    return point_frame, point_dims
+    return point_dframe, point_dims
 # -------------------------------------------------------------------------------------
