@@ -1,0 +1,2 @@
+# add libreries
+pip install rasterio
