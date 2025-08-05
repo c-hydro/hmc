@@ -24,6 +24,7 @@ old/
 dset/
 example/
 tmp/
+.idea/
 *OLD/
 OLD*/
 *OLD*/
