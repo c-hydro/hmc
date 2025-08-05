@@ -1,0 +1,21 @@
+name: hmc_runner
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - pandas
+  - xarray
+  - matplotlib
+  - netCDF4
+  - h5py
+  - dask
+  - pip
+  - pip:
+      - tqdm
+      - requests
+      - pyyaml
+

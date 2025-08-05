@@ -18,6 +18,7 @@ __pycache__/
 
 ws/
 data/
+results/
 conda/
 old/
 dset/
