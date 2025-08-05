@@ -18,13 +18,12 @@ from hmc.hydrological_toolkit.phys_lsm.phys_apps_lsm import (
 # class to handle et model
 class ETHandler:
 
-    def __init__(self, dset_geo_generic: xr.Dataset, dset_geo_parameters: xr.Dataset, dset_geo_lsm: xr.Dataset,
+    def __init__(self, dset_geo_generic: xr.Dataset, dset_geo_lsm: xr.Dataset,
                  da_reference: xr.DataArray,
                  time_step: pd.Timestamp, time_info: dict,
                  dt_delta_src: int = 3600, **kwargs) -> None:
 
         self.dset_geo_generic = dset_geo_generic
-        self.dset_geo_parameters = dset_geo_parameters
         self.dset_geo_lsm = dset_geo_lsm
 
         self.da_reference = da_reference

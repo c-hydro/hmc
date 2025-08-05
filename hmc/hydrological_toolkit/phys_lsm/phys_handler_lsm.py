@@ -16,20 +16,18 @@ from hmc.hydrological_toolkit.phys_lsm.phys_apps_lsm import (
 # class to handle land surface model
 class LSMHandler:
 
-    def __init__(self, dset_geo_generic: xr.Dataset, dset_geo_parameters: xr.Dataset, dset_geo_lsm: xr.Dataset,
+    def __init__(self, dset_geo_generic: xr.Dataset, dset_geo_lsm: xr.Dataset,
                  da_reference: xr.DataArray,
                  time_step: pd.Timestamp, time_info: dict,
                  dt_delta_src: int = 3600, dt_delta_min: int = 900) -> None:
 
         self.dset_geo_generic = dset_geo_generic
-        self.dset_geo_parameters = dset_geo_parameters
         self.dset_geo_lsm = dset_geo_lsm
 
         self.da_reference = da_reference
         self.rows, self.cols = self.da_reference.shape
 
         self.time_step = time_step
-        self.time_info = time_info
 
         self.time_steps_day = time_info['time_steps_day']
         self.time_steps_marked = time_info['time_steps_marked']
@@ -69,14 +67,12 @@ class LSMHandler:
         # get variables geo
         var_mask = get_variable_data(self.dset_geo_generic, var_name='mask', var_mandatory=True)
         var_s = get_variable_data(self.dset_geo_generic, var_name='s', var_mandatory=True)
+        var_ct = get_variable_data(self.dset_geo_generic, var_name='ct', var_mandatory=True)
 
         # get variables lsm
         var_ct_wp = get_variable_data(self.dset_geo_lsm, var_name='ct_wp', var_mandatory=True)
         var_kb_1 = get_variable_data(self.dset_geo_lsm, var_name='kb_1', var_mandatory=True)
         var_kc_1 = get_variable_data(self.dset_geo_lsm, var_name='kc_1', var_mandatory=True)
-
-        # get variables parameters
-        var_ct = get_variable_data(self.dset_geo_parameters, var_name='ct', var_mandatory=True)
 
         # get variables physics
         var_tair_k_day = get_variable_data(dset_phys_lsm, var_name='tak_step_day', var_mandatory=True)

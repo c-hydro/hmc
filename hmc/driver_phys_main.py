@@ -13,17 +13,21 @@ from hmc.hydrological_toolkit.phys_et.phys_handler_et import ETHandler
 # class to handle driver physics
 class PhysDriver(object):
 
-    def __init__(self, time_step: pd.Timestamp, time_info: dict,
-                 dset_geo_generic: xr.Dataset, dset_geo_parameters: xr.Dataset,
-                 dset_data: xr.Dataset, da_reference: xr.DataArray) -> None:
+    def __init__(self, settings: dict, parameters: dict,
+                 time_step: pd.Timestamp, time_info: dict,
+                 dset_geo: xr.Dataset, dset_data: xr.Dataset,
+                 da_reference: xr.DataArray,
+                 dt_model: int = 3600, dt_data_src: int = 3600, dt_data_dst: int = 3600) -> None:
+
+        self.settings = settings
+        self.parameters = parameters
 
         self.time_step = time_step
         self.time_info = time_info
 
-        self.dset_geo_generic = dset_geo_generic
-        self.dset_geo_parameters = dset_geo_parameters
-
+        self.dset_geo = dset_geo
         self.dset_data = dset_data
+
         self.da_reference = da_reference
 
     # method to wrap physics routine(s)
@@ -34,10 +38,10 @@ class PhysDriver(object):
 
         # initialize physics lsm class
         driver_phys_lsm = LSMHandler(
-            dset_geo_generic=self.dset_geo_generic,
-            dset_geo_parameters=self.dset_geo_parameters, dset_geo_lsm=dset_geo_lsm,
+            dset_geo_generic=self.dset_geo, dset_geo_lsm=dset_geo_lsm,
             da_reference=self.da_reference,
-            time_step=self.time_step, time_info=self.time_info)
+            time_step=self.time_step, time_info=self.time_info,
+            dt_delta_src=self.settings['dt_data_src'], dt_delta_min=900)
 
         # activate physics lsm
         if flag_phys:
@@ -65,8 +69,7 @@ class PhysDriver(object):
 
         # initialize physics evapotranspiration class
         driver_phys_et = ETHandler(
-            dset_geo_generic=self.dset_geo_generic,
-            dset_geo_parameters=self.dset_geo_parameters, dset_geo_lsm=dset_geo_lsm,
+            dset_geo_generic=self.dset_geo, dset_geo_lsm=dset_geo_lsm,
             da_reference=self.da_reference,
             time_step=self.time_step, time_info=self.time_info)
 

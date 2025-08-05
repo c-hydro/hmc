@@ -26,9 +26,10 @@ from hmc.hydrological_toolkit.variables.lib_variable_utils import extract_values
 # class to handle physics driver geo
 class GeoDriver(GeoHandler):
 
-    def __init__(self, static_data_grid: xr.Dataset, static_data_array: dict,
+    def __init__(self, static_data_point: dict,  static_data_grid: xr.Dataset, static_data_array: dict,
                  reference_grid: xr.DataArray, parameters: dict) -> None:
 
+        self.static_data_point = static_data_point
         self.static_data_grid = static_data_grid
         self.static_data_array = static_data_array
         self.reference_grid = reference_grid
@@ -125,5 +126,14 @@ class GeoDriver(GeoHandler):
         dset_geo_surface = self.update_data(dset_geo_surface, dset_geo_tmp)
 
         return dset_geo_surface
+
+    def wrap_geo_sections(self):
+        print()
+
+    def wrap_geo_lakes(self):
+        print()
+
+    def wrap_geo_hydraulic_structure(self):
+        print('dam, joint, release')
 # ----------------------------------------------------------------------------------------------------------------------
 

@@ -24,6 +24,7 @@ def main(file_name: str = None, folder_name: str = None):
 # call entrypoint
 if __name__ == '__main__':
 
+    # input data
     file_name = 'hmc.forcing-grid.202203071200.nc'
     folder_name = '/home/fabio/Desktop/HMC_Package/data/meteo/2022/03/07/'
 

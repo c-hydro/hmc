@@ -132,7 +132,7 @@ def hmc_main():
 
     # ------------------------------------------------------------------------------------------------------------------
     # driver physics geo
-    driver_geo = GeoDriver(data_geo_grid, data_geo_array,
+    driver_geo = GeoDriver(data_geo_point, data_geo_grid, data_geo_array,
                            parameters=namelist_obj['parameters'], reference_grid=info_reference_grid)
     # method to wrap geo generic dataset
     dset_geo_generic = driver_geo.wrap_geo_generic(dset_geo_generic)
@@ -143,6 +143,11 @@ def hmc_main():
 
     # method to wrap phys volume dataset
     dset_phys_volume = driver_geo.wrap_geo_volume(dset_geo_generic, dset_phys_volume)
+
+    # method to wrap sections, lakes and hydraulic structure(s)
+    driver_geo.wrap_geo_sections()
+    driver_geo.wrap_geo_lakes()
+    driver_geo.wrap_geo_hydraulic_structure()
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -168,9 +173,9 @@ def hmc_main():
 
             # driver physics
             driver_phys = PhysDriver(
-                time_step=time_step, time_info=reference_time_obj,
-                dset_geo_generic=dset_geo_generic, dset_geo_parameters=dset_geo_params,
-                dset_data=dset_data_dynamic_src_obj,
+                settings=namelist_obj['settings'], parameters=namelist_obj['parameters'],
+                time_step=time_step, time_info=info_dims_time,
+                dset_geo=dset_geo_generic, dset_data=dset_data_dynamic_src_obj,
                 da_reference=info_reference_grid)
 
             # wrap physics lsm routine(s)
