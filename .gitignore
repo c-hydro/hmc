@@ -38,6 +38,7 @@ Log
 tmp
 TMP
 Tmp
+log.txt
 *log*.txt
 *Log*.txt
 *old*.txt
