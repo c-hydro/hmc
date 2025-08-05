@@ -3,8 +3,8 @@
 # ----------------------------------------------------------------------------------------
 # Script Name and Version
 script_name='HMC ENVIRONMENT - PYTHON LIBRARIES FOR PACKAGE - RUNNER DATA - CONDA'
-script_version="1.7.0"
-script_date='2025/08/04'
+script_version="1.7.1"
+script_date='2025/08/05'
 
 # info message start
 echo " ============================================================================="
@@ -96,6 +96,23 @@ activate_conda_env() {
   source "$ENV_ROOT/bin/activate"
   conda activate "$LIBRARIES_FOLDER"
 }
+
+generate_activation_file() {
+  local activate_file="activate_${LIBRARIES_FOLDER}.sh"
+  echo "[*] Creating activation script: $activate_file"
+
+  cat <<EOF > "$activate_file"
+#!/bin/bash
+# Auto-generated script to activate the Conda environment '$LIBRARIES_FOLDER'
+export PATH="${ENV_ROOT}/bin:\$PATH"
+source "${ENV_ROOT}/bin/activate"
+conda activate "$LIBRARIES_FOLDER"
+EOF
+
+  chmod +x "$activate_file"
+  echo "[*] You can now activate the environment manually using:"
+  echo "    source $activate_file"
+}
 # ----------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------
@@ -117,6 +134,7 @@ main() {
   install_miniconda
   create_conda_env
   activate_conda_env
+  generate_activation_file
 
   echo ""
   echo " ----------------------------------------------------------------------------- "
@@ -124,9 +142,10 @@ main() {
   echo "    ENVIRONMENT '$LIBRARIES_FOLDER' IS READY"
   echo "    PYTHON PACKAGE(S) INSTALLED FROM: $REQUIREMENTS_FILE"
   echo "    CONDA BASE LOCATED AT: $ENV_ROOT"
+  echo "    TO ACTIVATE MANUALLY, RUN:"
+  echo "      source activate_${LIBRARIES_FOLDER}.sh"
   echo " ----------------------------------------------------------------------------- "
   echo ""
-
 }
 
 # call main 
@@ -137,8 +156,4 @@ echo " ==> "$script_name" (Version: "$script_version" Release_Date: "$script_dat
 echo " ==> ... END"
 echo " ==> Bye, Bye"
 echo " ============================================================================== "
-# ----------------------------------------------------------------------------------------
-
-
-
 
