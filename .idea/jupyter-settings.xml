@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JupyterPersistentConnectionParameters">
+    <option name="moduleParameters">
+      <map>
+        <entry key="$PROJECT_DIR$/../PyCharm_Workspace/.idea/PyCharm_Workspace.iml">
+          <value>
+            <JupyterConnectionParameters>
+              <option name="managed" value="true" />
+              <option name="sdkHomePath" value="$PROJECT_DIR$/../../Library/fp_virtualenv_python3/envs/fp_virtualenv_python3_hmc_libraries/bin/python" />
+              <option name="sdkName" value="Python 3.7 (fp_virtualenv_python3_hmc_libraries)" />
+            </JupyterConnectionParameters>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
