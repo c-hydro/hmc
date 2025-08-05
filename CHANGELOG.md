@@ -1,127 +1,113 @@
-=========
-Changelog
-=========
 
-Version 4.0.0 (20240730)
-========================
+# Changelog
 
-- Codes and package refactoring based on HMC new codes generation
+All notable changes to this project are documented here.
 
-Version 3.1.6 (20240326)
-========================
+```{contents}
+:local:
+:depth: 2
+```
 
-- Codes and package based on HMC Fortran codes version 3.1.6;
-- Add in the template time the "dset_datetime_run" and ""dset_sub_path_run" configuration;
-- Add the setup of the conda configuration environment;
-- Extend the hmc tool to create time-series from gridded information;
-- Extend the hmc tool to create time-series according to the different format of regional meteorological services.
+## Version 4.x
 
-Version 3.1.5 (20221130)
-========================
+### [4.0.0] – 2024-07-30
 
-- Codes and package based on HMC Fortran codes version 3.1.5;
-- Add the writers for discharges, dams volume and dams level in json format; 
-- Add the condition for the section code in the section points file in character format;
-- Add the possibility of providing to the model time series of observed socket/release systems;
-- Add the choice of constant baseflow for each sections (adding a column in the sections shapefile) [experimental];
-- Add the selection of the sections using the "hmc_file_filter" dictionary in the datasets configuration file;
-- Add the condition to create a tmp folder for the analysis tool (keep/delete tmp files);
-- Add the check to control the datasets (mandatory or not mandatory) before running the model;
-- Add the tool for merging datasets of different domains into a unique domain;
-- Add the tool for merging collections from different deterministic modelling chains;
-- Add the tool for merging multiple deterministic runs
-- Extend the hmc tool for converting time-series adding the dam volume datasets;
-- Extend the hmc tool for merging gridded sources (continuum, qt and s3m datasets) and the expected data format for input (netcdf, tiff) and output (netcdf, tiff);
-- Extend the hmc tool for preprocessing gridded sources adding the restart datasets in binary format;
-- Fix bugs in the hmc manager in managing the point static datasets of dams, joints, lakes, intakes and sections;
-- Fix bugs in the hmc manager in managing the compatibility for sections file in shp or ascii format, also with 3 levels of warning;
-- Fix bugs in the hmc manager in adding observed time-series [discharge, dam volume and dam level] to the json and summary data structure;
-- Fix bugs in the hmc manager in adding dam unavailable datasets in summary data structure;
-- Fix bugs in the hmc manager for supporting concentration time equal to 0;
-- Fix bugs in the hmc tool for making ensemble time-series;
-- Fix bugs in the hmc tool for merging gridded output also in presence of clipped lon-lat matrices;
-- Refactoring of the tools section.
+- Refactored the entire codebase and packages based on the new HMC code generation.
 
-Version 3.1.4 (20210308)
-========================
+## Version 3.x
 
-- Codes and package based on HMC Fortran codes version 3.1.4;
-- Add the reader for the geotiff datasets in the forcing part;
-- Add the reader for the ascii file of the lakes in the static part; 
-- Add the routines to compute the latitude, longitude and cell area ascii grid to avoid the blocking of the run; 
-- Add the routines to compute the catchments mask;
-- Add the routines to compute the average time-series over the catchments mask;
-- Add the controls to avoid not allowed dimensions and undefined values in the forcing datasets in netcdf format: 
-- Add tool to convert source datasets to continuum netcdf file format;
-- Add bash launcher script to configure different configuration of model run; 
-- Fix bugs in managing/reading/saving the updating datasets;
-- Fix bugs in interpolating methods in case of not equal dimensions between terrain and forcing datasets;
-- Fix bugs in reading the section and the intake info static files;
-- Fix bugs in computing the average time-series for the outcome datasets;
-- Fix bugs in defining the frequency of the datasets;
-- Fix bugs in computing the time slices to organize the run and the collections of the source and destination datasets;
-- Fix bugs in case of the lacking of static information (dam/joint/intake/lakes). 
+### [3.1.6] – 2024-03-26
 
-Version 3.1.3 (20201028)
-========================
+- Support for HMC Fortran version 3.1.6.
+- Added configuration parameters: `dset_datetime_run` and `dset_sub_path_run`.
+- Set up Conda environment integration.
+- Extended time-series tools for:
+  - Gridded datasets.
+  - Regional meteorological service formats.
 
-- Codes and package based on HMC Fortran codes version 3.1.3;
-- Add the shapefile reading to get the section information; the "{domain}.info_sections.txt" is saved by the procedure using the shapefile points;
-- Fix bugs in managing the forcing gridded netcdf;
-- Fix bugs in managing the analysis time-series netcdf;
-- Fix bugs in managing the dimensions of gridded netcdf;
-- Fix bugs in managing the variables defined as (t,y,x) or (y,x,t) to correctly find the time dimension;
-- Fix bugs in managing the orientation of gridded netcdf variables;
-- Fix bugs in saving file attributes of "x_ll_corner" and "y_ll_corner";
-- Add tool to convert binary datasets to netcdf file;
-- Add tool to merge discharges in a probabilistic json output;
-- Add tool to convert json output in ascii dewetra format. 
+### [3.1.5] – 2022-11-30
 
-Version 3.1.2 (20200819)
-========================
+**Additions**:
 
-- Codes and package based on HMC Fortran codes version 3.1.2
+- HMC Fortran v3.1.5 integration.
+- Writers for discharges, dam volumes/levels in JSON.
+- Time-series input for socket/release systems.
+- Constant baseflow support per section via shapefile.
+- Section filtering via `hmc_file_filter`.
+- Temporary analysis directory handling.
+- Dataset presence validation pre-run.
+- Tools for:
+  - Merging datasets across domains and deterministic runs.
+  - Gridded dataset conversion and preprocessing.
+  - Dam volume time-series handling.
 
-Version 1.8.5 (20200207)
-========================
+**Fixes**:
 
-- Fix bugs in managing time-series
-- Fix bugs in writing time-series
+- Numerous bug fixes in:
+  - Static dataset handling.
+  - JSON/summary time-series updates.
+  - Gridded data compatibility.
+  - Section format compatibility and warnings.
 
-Version 1.8.4 (20200120)
-========================
+### [3.1.4] – 2021-03-08
 
-- Fix bugs in probabilistic mode
-- Insert package documentation
-- Insert model documentation
-- Update configuration files in json format
+- Added support for:
+  - GeoTIFF and ASCII lake readers.
+  - Automatic generation of lat/lon/cell area grids.
+  - Catchment masks and catchment-based time-series.
+  - Dataset dimension and undefined value validation.
+- Introduced:
+  - NetCDF conversion tools.
+  - Bash launcher for model runs.
+- Bug fixes in:
+  - Interpolation and static file reading.
+  - Dataset frequency/time slice handling.
 
-Version 1.8.0 (20180521)
-========================
+### [3.1.3] – 2020-10-28
 
-- Codes and package refactoring based on HMC Fortran codes version 2.0.7.
-- Python 3 refactoring. 
+- Shapefile-based section extraction (`.info_sections.txt`).
+- Tools for:
+  - Binary to NetCDF conversion.
+  - Probabilistic discharge merging.
+  - JSON-to-ASCII (Dewetra) output conversion.
+- Fixed netCDF time handling and orientation issues.
 
-Version 1.7.0 (20161114)
-========================
+### [3.1.2] – 2020-08-19
 
-- Codes and package refactoring based on HMC Fortran codes version 2.0.6.
+- Support for HMC Fortran version 3.1.2.
 
-Version 1.6.0 (20150928)
-========================
+## Version 1.x
 
-- Update code style and other stuff.
-- Update data and algorithm structures.
-- Update functions and names.
+### [1.8.5] – 2020-02-07
 
-Version 1.5.0 (20150707)
-========================
+- Fixed time-series management and writing bugs.
 
-- Release based on Regione Marche operative hydrologic chain.
-- Update Continuum Codes to modern Fortran code style.
+### [1.8.4] – 2020-01-20
 
-Version 1.0.0 (20140401)
-========================
+- Documentation added for model and packages.
+- Probabilistic mode bugs fixed.
+- JSON configuration supported.
 
-- Initial version with methods and classes migrated from research projects (DRIHM and DRIHM2US)
-  based on DRiFt and Continuum Codes old versions.
+### [1.8.0] – 2018-05-21
+
+- Code refactoring for HMC Fortran v2.0.7.
+- Migrated to Python 3.
+
+### [1.7.0] – 2016-11-14
+
+- Refactored based on HMC Fortran v2.0.6.
+
+### [1.6.0] – 2015-09-28
+
+- Updated code style and naming conventions.
+- Enhanced algorithm/data structures.
+
+### [1.5.0] – 2015-07-07
+
+- Based on Regione Marche hydrologic chain.
+- Updated Continuum Codes (modern Fortran).
+
+### [1.0.0] – 2014-04-01
+
+- Initial release from DRIHM/DRIHM2US research projects.
+- Legacy DRiFt and Continuum Codes migration.

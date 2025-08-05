@@ -1,26 +1,90 @@
 # Hydrological Model Continuum
 
-Welcome to the **Hydrological Model Continuum** GitHub repository. 
-This is a hydrological model supported by the Italian Civil Department (DPC) and is used 
-for preventing and reducing hydrogeological risk. 
+```{eval-rst}
+.. image:: https://img.shields.io/badge/license-MIT-blue.svg
+   :target: LICENSE
+.. image:: https://img.shields.io/badge/python-3.7%2B-blue.svg
+   :target: https://www.python.org/downloads/
+```
 
-## Background
+## Overview
 
-The **Hydrological Model Continuum** is a model designed by CIMA Research Foundation to support decision makers 
-during the operational phases of flood forecasting and monitoring. 
-The goal is to protect the population and infrastructure from damage caused by intense precipitation events.
-The Flood-PROOFS system manages the data flow deriving from various modelling tools developed by the CIMA Research Foundation to return a quantitative assessment of the effects that precipitation can have on the territory in terms of flow and probability to overcome the critical thresholds in the different basins. 
-The system has been operating since 2008 at various Functional Centers (Autonomous Region of Valle d'Aosta and Marche) where it is used for the issue of hydro-meteorological warnings for civil protection purposes. At the technical offices of the Valle d'Aosta Water Company (CVA) it is instead useful to study and implement strategies to mitigate flood events or to secure facilities in the event of flooding.
+The **Hydrological Model Continuum** is a modular system developed by the **CIMA Research Foundation** with the support of the **Italian Civil Protection Department (DPC)**. It is designed to support flood forecasting, warning issuance, and hydrogeological risk management.
 
-Components
-**********
+The model operates as part of the **Flood-PROOFS** system, which integrates hydrological tools for real-time decision support in civil protection contexts.
 
-The Flood-PROOFS forecasting chain consists in the following different parts, which are summarized as follows:
+## Purpose
 
-    • **Processing**: tools to organize input and output datasets written in python3 language usually named **Hydrological Data Engines [hyde]** package;
-    • **Simulation**: tools to set and run Hydrological Model Continuum (HMC) written both in python3 and fortran programming language usually named **Hydrological Model Continuum [hmc]** package;
-    • **Publishing and Visualization**: tools to control, view and analyze results written both in python3 and R programming language usually named as **Hydrological Analysis tools [hat]** package;
-    • **Labs**: laboratories for running components of the modelling system, for trainings and educational use;
-    • **Utilities**: common functionality required by the previous components.
+The goal is to protect people and infrastructure by:
 
-All codes and datasets are freely available and users can be get them from our github repository [1_].
+- Forecasting hydrological events,
+- Assessing precipitation impact in various basins,
+- Generating real-time alerts and flood warnings.
+
+Deployed operationally since 2008 in:
+- **Valle d'Aosta Functional Center**
+- **Marche Functional Center**
+- **CVA Valle d’Aosta Technical Offices**
+
+## Components
+
+```{toctree}
+:hidden:
+:maxdepth: 2
+
+components/hyde
+components/hmc
+components/hat
+components/labs
+components/utilities
+```
+
+The Flood-PROOFS chain consists of:
+
+- **Processing** — `hyde`: Dataset input/output managers (Python 3).
+- **Simulation** — `hmc`: Core Hydrological Model (Python 3 & Fortran).
+- **Visualization** — `hat`: Analysis and plotting tools (Python 3 & R).
+- **Labs**: Training and educational environments.
+- **Utilities**: Shared functions and helper modules.
+
+## Repository Structure
+
+```text
+.
+├── hyde/        # Data preprocessing and organization
+├── hmc/         # Hydrological simulation engine
+├── hat/         # Visualization and analytics
+├── labs/        # Educational and training notebooks
+├── utils/       # Shared utilities
+├── docs/        # Sphinx documentation
+└── README.md    # This file
+```
+
+## Installation
+
+```bash
+git clone https://github.com/your-org/hydrological-model-continuum.git
+cd hydrological-model-continuum
+pip install -r requirements.txt
+```
+
+## Documentation
+
+To build the Sphinx documentation locally:
+
+```bash
+cd docs
+make html
+```
+
+Open `docs/_build/html/index.html` in your browser.
+
+## License
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+
+## References
+
+- [CIMA Research Foundation](https://www.cimafoundation.org/)
+- [Flood-PROOFS System](https://www.cimafoundation.org/floodproofs)
+- [Italian Civil Protection Department](http://www.protezionecivile.gov.it/)

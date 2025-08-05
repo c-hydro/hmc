@@ -1,7 +1,14 @@
-# Use the CODEOWNERS file to assign individual users as responsible for specific parts of the repository code.
-# example of CODEOWNERS file and more info can be found here:
-## https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#example-of-a-codeowners-file
 
-# You probably should assign yourself (i.e. the manager), as well as your co-manager(s) as owner(s) of the entire repository (uncomment below):
-# * @your-github-handle @other-ghithub-handle
-* @fabiodelogu
+# Code Owners
+
+This file defines the individuals responsible for code review and maintenance of specific parts of the project.
+
+```{note}
+CODEOWNERS ensures that designated reviewers are automatically requested when changes are made to files they own.
+```
+
+## Ownership Table
+
+```text
+*                           @fabio.delogu @francesco.silvestro @andrea.libertino
+```
